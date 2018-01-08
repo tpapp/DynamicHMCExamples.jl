@@ -7,7 +7,7 @@
 
 Examples for my libraries for Bayesian inference. They are not (yet) registered, so you need to clone the repositories. You can do this easily by running [`clone-packages.jl`](clone-packages.jl) from this repository.
 
-The examples are in the [./src/](src/) directory as Jupyter notebooks.
+The examples are in the [src/](./src/) directory as Jupyter notebooks.
 
 Note that this is *not* an introduction to Bayesian inference, merely an implementation in Julia using a certain approach that I find advantageous. The focus is on coding the (log) posterior as a function, then passing this to a modern Hamiltonian Monte Carlo sampler (a variant of NUTS, as described in [Betancourt (2017)](https://arxiv.org/abs/1701.02434).
 
