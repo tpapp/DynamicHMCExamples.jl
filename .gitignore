@@ -1,3 +1,4 @@
 *.jl.cov
 *.jl.*.cov
 *.jl.mem
+/src/.ipynb_checkpoints/Estimation of a covariance matrix-checkpoint.ipynb
