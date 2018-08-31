@@ -1,9 +1,13 @@
-using Base.Test
+using Test
 using DynamicHMCExamples: rel_path
-using NBInclude
+using Random
 
-nbinclude(rel_path("Estimation of a covariance matrix.ipynb"))
-@test all(ESS .≥ 500)
+Random.seed!(UInt32[0x57a97f0d, 0x1a38664c, 0x0dddb228, 0x7dbba96f])
 
-nbinclude(rel_path("Independent Bernoulli draws.ipynb"))
-@test all(ess_α .≥ 200)
+# includenbinclude(rel_path("Estimation of a covariance matrix.ipynb"))
+# @test all(ESS .≥ 500)
+
+@testset "independent bernoulli" begin
+    include(rel_path("independent_bernoulli.jl"))
+    @test ess_α ≥ 200
+end
