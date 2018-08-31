@@ -17,7 +17,8 @@ end
 
 # generate using Literate
 
-DOCSOURCE = rel_path("../docs/src")
+DOCROOT = rel_path("../docs")
+DOCSOURCE = joinpath(DOCROOT, "src")
 EXAMPLES = ["independent_bernoulli"]
 
 for example in EXAMPLES
@@ -27,15 +28,15 @@ end
 
 # render & deploy using Documenter
 
-cd(joinpath(DOCSOURCE, ".."))
-
-makedocs(modules = Module[],
+makedocs(root = DOCROOT,
+         modules = Module[],
          format = :html,
          sitename = "DynamicHMCExamples.jl",
          pages = vcat(Any["index.md"],
                       Any["$(example).md" for example in EXAMPLES]))
 
-deploydocs(repo = "github.com/tpapp/DynamicHMCExamples.jl.git",
+deploydocs(root = DOCROOT,
+           repo = "github.com/tpapp/DynamicHMCExamples.jl.git",
            target = "build",
            osname = "linux",
            julia = "1.0",
