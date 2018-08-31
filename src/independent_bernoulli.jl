@@ -1,3 +1,5 @@
+# # Estimate Bernoulli draws probabilility
+
 # We estimate a simple model of ``n`` independent Bernoulli draws, with
 # probability ``α``. First, we load the packages we use.
 
@@ -40,8 +42,7 @@ p((α = 0.5, ))
 
 # Recall that we need to
 #
-# 1. transform from ``ℝ`` to the valid parameter domain `(0,1)` for more
-# efficient sampling, and
+# 1. transform from ``ℝ`` to the valid parameter domain `(0,1)` for more efficient sampling, and
 #
 # 2. calculate the derivatives for this transformed mapping.
 #
@@ -62,8 +63,16 @@ chain, NUTS_tuned = NUTS_init_tune_mcmc(∇P, 1000)
 
 posterior = transform.(Ref(∇P.transformation), get_position.(chain));
 
+# Extract the parameter.
+
 posterior_α = first.(posterior);
+
+# check the mean
+
 mean(posterior_α)
+
+# check the effective sample size
+
 ess_α = effective_sample_size(posterior_α)
 
 # NUTS-specific statistics
