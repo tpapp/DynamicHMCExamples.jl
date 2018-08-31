@@ -22,9 +22,8 @@ matrix:
 #  apt: # apt-get for linux
 #    packages:
 #    - gfortran
-# before_script: # homebrew for mac
-#  - julia -e 'using Pkg; pkg"add https://travis-ci.org/tpapp/TransformVariables.jl"; pkg"add https://github.com/tpapp/LogDensityProblems.jl"'
-
+before_script:
+ - julia -e 'using Pkg; pkg"up"'
 ## uncomment the following lines to override the default test script
 # script:
 #   - julia clone-packages.jl

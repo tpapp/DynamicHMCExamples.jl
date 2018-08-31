@@ -67,12 +67,6 @@ git-tree-sha1 = "a2ab006ff561a57eb858cee5314445b16c2fd2dd"
 uuid = "ffbed154-4ef7-542d-bbb7-c09d3a79fcae"
 version = "0.4.6"
 
-[[Documenter]]
-deps = ["Compat", "DocStringExtensions", "Logging", "REPL"]
-git-tree-sha1 = "7534ff3c50333a69ae0778d4d869e6f5c9ec022a"
-uuid = "e30172f5-a6a5-5a46-863b-614d45cd2de4"
-version = "0.19.6"
-
 [[DynamicHMC]]
 deps = ["ArgCheck", "DataStructures", "DocStringExtensions", "LinearAlgebra", "LogDensityProblems", "Parameters", "Random", "Statistics", "StatsFuns", "TransformVariables"]
 git-tree-sha1 = "647833c8736ec3fcffad4ff97576634078ba88b9"
@@ -91,12 +85,6 @@ version = "0.8.5"
 deps = ["LinearAlgebra", "Markdown"]
 uuid = "b77e0a4c-d291-57a0-90e8-8db25a27a240"
 
-[[JSON]]
-deps = ["Dates", "Distributed", "Mmap", "Pkg", "Sockets", "Test", "Unicode"]
-git-tree-sha1 = "fec8e4d433072731466d37ed0061b3ba7f70eeb9"
-uuid = "682c06a0-de6a-54ab-a142-c8b1cf79cde6"
-version = "0.19.0"
-
 [[LibGit2]]
 uuid = "76f85450-5226-5b5a-8eaa-529ad045b433"
 
@@ -106,12 +94,6 @@ uuid = "8f399da3-3557-5675-b5ff-fb832c97cbdb"
 [[LinearAlgebra]]
 deps = ["Libdl"]
 uuid = "37e2e46d-f89d-539d-b4ee-838fcccc9c8e"
-
-[[Literate]]
-deps = ["Base64", "JSON", "Markdown", "Pkg", "REPL", "Test"]
-git-tree-sha1 = "d4b0b9c56940a02ac117a316a967e087eb3c2dfb"
-uuid = "98b081ad-f1c9-55d3-8b20-4c87d4299306"
-version = "1.0.1"
 
 [[LogDensityProblems]]
 deps = ["ArgCheck", "DiffResults", "DocStringExtensions", "ForwardDiff", "Parameters", "Random", "TransformVariables"]
