@@ -12,7 +12,7 @@ DOCSOURCE = joinpath(DOCROOT, "src")
 EXAMPLES = ["independent_bernoulli"]
 
 for example in EXAMPLES
-    Literate.markdown(rel_path("$(example).jl"), DOCSOURCE)
+    Literate.markdown(rel_path("example_$(example).jl"), DOCSOURCE)
 end
 
 
@@ -23,7 +23,7 @@ makedocs(root = DOCROOT,
          format = :html,
          sitename = "DynamicHMCExamples.jl",
          pages = vcat(Any["index.md"],
-                      Any["$(example).md" for example in EXAMPLES]))
+                      Any["example_$(example).md" for example in EXAMPLES]))
 
 deploydocs(root = DOCROOT,
            repo = "github.com/tpapp/DynamicHMCExamples.jl.git",

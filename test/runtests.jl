@@ -7,7 +7,7 @@ Random.seed!(UInt32[0x57a97f0d, 0x1a38664c, 0x0dddb228, 0x7dbba96f])
 # @test all(ESS .≥ 500)
 
 @testset "independent bernoulli" begin
-    include(rel_path("independent_bernoulli.jl"))
+    include(rel_path("example_independent_bernoulli.jl"))
     @test ess_α ≥ 200
 end
 
