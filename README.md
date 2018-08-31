@@ -9,7 +9,7 @@
 This repository contains examples for my the libraries related Bayesian inference I maintain. Install this with
 
 ```julia
-pkg> add https://github.com/tpapp/DynamicHMCExamples.jl.git
+pkg> add https://github.com/tpapp/DynamicHMCExamples.jl
 ```
 
 which will download a working and tested set of versions. Optionally, you can `pkg> up` after this.
