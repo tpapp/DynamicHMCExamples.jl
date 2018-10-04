@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en"><head><meta charset="UTF-8"/><meta name="viewport" content="width=device-width, initial-scale=1.0"/><title>Estimate Bernoulli draws probabilility · DynamicHMCExamples.jl</title><link href="https://cdnjs.cloudflare.com/ajax/libs/normalize/4.2.0/normalize.min.css" rel="stylesheet" type="text/css"/><link href="https://fonts.googleapis.com/css?family=Lato|Roboto+Mono" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.6.3/css/font-awesome.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/styles/default.min.css" rel="stylesheet" type="text/css"/><script>documenterBaseURL="."</script><script src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.2.0/require.min.js" data-main="assets/documenter.js"></script><script src="siteinfo.js"></script><script src="../versions.js"></script><link href="assets/documenter.css" rel="stylesheet" type="text/css"/></head><body><nav class="toc"><h1>DynamicHMCExamples.jl</h1><select id="version-selector" onChange="window.location.href=this.value" style="visibility: hidden"></select><form class="search" id="search-form" action="search.html"><input id="search-query" name="q" type="text" placeholder="Search docs"/></form><ul><li><a class="toctext" href="index.html">Overview</a></li><li class="current"><a class="toctext" href="example_independent_bernoulli.html">Estimate Bernoulli draws probabilility</a><ul class="internal"></ul></li></ul></nav><article id="docs"><header><nav><ul><li><a href="example_independent_bernoulli.html">Estimate Bernoulli draws probabilility</a></li></ul><a class="edit-page" href="https://github.com/tpapp/DynamicHMCExamples.jl/blob/master/src/example_independent_bernoulli.jl"><span class="fa"></span> Edit on GitHub</a></nav><hr/><div id="topbar"><span>Estimate Bernoulli draws probabilility</span><a class="fa fa-bars" href="#"></a></div></header><h1><a class="nav-anchor" id="Estimate-Bernoulli-draws-probabilility-1" href="#Estimate-Bernoulli-draws-probabilility-1">Estimate Bernoulli draws probabilility</a></h1><p>We estimate a simple model of <span>$n$</span> independent Bernoulli draws, with probability <span>$α$</span>. First, we load the packages we use.</p><div><pre><code class="language-julia">using TransformVariables
+<html lang="en"><head><meta charset="UTF-8"/><meta name="viewport" content="width=device-width, initial-scale=1.0"/><title>Estimate Bernoulli draws probabilility · DynamicHMCExamples.jl</title><link href="https://cdnjs.cloudflare.com/ajax/libs/normalize/4.2.0/normalize.min.css" rel="stylesheet" type="text/css"/><link href="https://fonts.googleapis.com/css?family=Lato|Roboto+Mono" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.6.3/css/font-awesome.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/styles/default.min.css" rel="stylesheet" type="text/css"/><script>documenterBaseURL="."</script><script src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.2.0/require.min.js" data-main="assets/documenter.js"></script><script src="siteinfo.js"></script><script src="../versions.js"></script><link href="assets/documenter.css" rel="stylesheet" type="text/css"/></head><body><nav class="toc"><h1>DynamicHMCExamples.jl</h1><select id="version-selector" onChange="window.location.href=this.value" style="visibility: hidden"></select><form class="search" id="search-form" action="search.html"><input id="search-query" name="q" type="text" placeholder="Search docs"/></form><ul><li><a class="toctext" href="index.html">Overview</a></li><li class="current"><a class="toctext" href="example_independent_bernoulli.html">Estimate Bernoulli draws probabilility</a><ul class="internal"></ul></li><li><a class="toctext" href="example_linear_regression.html">Linear regression</a></li></ul></nav><article id="docs"><header><nav><ul><li><a href="example_independent_bernoulli.html">Estimate Bernoulli draws probabilility</a></li></ul><a class="edit-page" href="https://github.com/tpapp/DynamicHMCExamples.jl/blob/master/src/example_independent_bernoulli.jl"><span class="fa"></span> Edit on GitHub</a></nav><hr/><div id="topbar"><span>Estimate Bernoulli draws probabilility</span><a class="fa fa-bars" href="#"></a></div></header><h1><a class="nav-anchor" id="Estimate-Bernoulli-draws-probabilility-1" href="#Estimate-Bernoulli-draws-probabilility-1">Estimate Bernoulli draws probabilility</a></h1><p>We estimate a simple model of <span>$n$</span> independent Bernoulli draws, with probability <span>$α$</span>. First, we load the packages we use.</p><div><pre><code class="language-julia">using TransformVariables
 using LogDensityProblems
 using DynamicHMC
 using MCMCDiagnostics
@@ -26,37 +26,37 @@ MCMC, adapting ϵ (25 steps)
 MCMC, adapting ϵ (50 steps)
  ...done
 MCMC, adapting ϵ (100 steps)
-step 100/100, 8.4 s/step
+step 100/100, 36.0 s/step
  ...done
 MCMC, adapting ϵ (200 steps)
-step 100/200, 8.1 s/step
-step 200/200, 6.3 s/step
+step 100/200, 34.0 s/step
+step 200/200, 28.0 s/step
  ...done
 MCMC, adapting ϵ (400 steps)
-step 100/400, 8.5 s/step
-step 200/400, 6.2 s/step
-step 300/400, 6.6 s/step
-step 400/400, 6.5 s/step
+step 100/400, 34.0 s/step
+step 200/400, 30.0 s/step
+step 300/400, 30.0 s/step
+step 400/400, 29.0 s/step
  ...done
 MCMC, adapting ϵ (50 steps)
  ...done
 MCMC (1000 steps)
-step 100/1000, 6.3 s/step
-step 200/1000, 7.1 s/step
-step 300/1000, 5.9 s/step
-step 400/1000, 6.0 s/step
-step 500/1000, 6.1 s/step
-step 600/1000, 6.2 s/step
-step 700/1000, 6.0 s/step
-step 800/1000, 5.9 s/step
-step 900/1000, 5.7 s/step
-step 1000/1000, 6.3 s/step
+step 100/1000, 27.0 s/step
+step 200/1000, 28.0 s/step
+step 300/1000, 26.0 s/step
+step 400/1000, 27.0 s/step
+step 500/1000, 25.0 s/step
+step 600/1000, 25.0 s/step
+step 700/1000, 26.0 s/step
+step 800/1000, 26.0 s/step
+step 900/1000, 27.0 s/step
+step 1000/1000, 28.0 s/step
  ...done
-(NUTS_Transition{Array{Float64,1},Float64}[NUTS_Transition{Array{Float64,1},Float64}([0.211922], -15.5874, 1, DoubledTurn, 1.0, 1), NUTS_Transition{Array{Float64,1},Float64}([0.178388], -15.3799, 1, DoubledTurn, 1.0, 1), NUTS_Transition{Array{Float64,1},Float64}([0.0499903], -15.3167, 1, AdjacentTurn, 1.0, 3), NUTS_Transition{Array{Float64,1},Float64}([-0.0358291], -15.2636, 1, AdjacentTurn, 0.998931, 3), NUTS_Transition{Array{Float64,1},Float64}([-0.225635], -15.3996, 1, AdjacentTurn, 0.968009, 3), NUTS_Transition{Array{Float64,1},Float64}([-0.122101], -15.3629, 1, DoubledTurn, 1.0, 1), NUTS_Transition{Array{Float64,1},Float64}([0.187963], -15.667, 2, DoubledTurn, 0.93865, 3), NUTS_Transition{Array{Float64,1},Float64}([0.539198], -16.7141, 2, DoubledTurn, 0.818367, 3), NUTS_Transition{Array{Float64,1},Float64}([-0.134259], -16.192, 1, AdjacentTurn, 0.969491, 3), NUTS_Transition{Array{Float64,1},Float64}([-0.0542094], -15.343, 2, DoubledTurn, 0.993534, 3)  …  NUTS_Transition{Array{Float64,1},Float64}([0.284377], -16.7682, 2, DoubledTurn, 0.791464, 3), NUTS_Transition{Array{Float64,1},Float64}([0.293805], -15.5431, 1, DoubledTurn, 0.995977, 1), NUTS_Transition{Array{Float64,1},Float64}([-0.210916], -16.6947, 2, DoubledTurn, 0.826988, 3), NUTS_Transition{Array{Float64,1},Float64}([0.151088], -15.6053, 2, DoubledTurn, 0.969377, 3), NUTS_Transition{Array{Float64,1},Float64}([0.187134], -15.3566, 1, DoubledTurn, 0.99086, 1), NUTS_Transition{Array{Float64,1},Float64}([0.406168], -15.6998, 1, DoubledTurn, 0.908208, 1), NUTS_Transition{Array{Float64,1},Float64}([0.0979886], -15.9063, 2, DoubledTurn, 0.969737, 3), NUTS_Transition{Array{Float64,1},Float64}([0.14664], -15.3109, 1, DoubledTurn, 0.991035, 1), NUTS_Transition{Array{Float64,1},Float64}([0.313632], -15.5187, 1, DoubledTurn, 0.944094, 1), NUTS_Transition{Array{Float64,1},Float64}([0.350011], -15.6443, 1, DoubledTurn, 0.982457, 1)], NUTS sampler in 1 dimensions
-  stepsize (ϵ) ≈ 1.12
+(NUTS_Transition{Array{Float64,1},Float64}[NUTS_Transition{Array{Float64,1},Float64}([0.213303], -15.3989, 1, AdjacentTurn, 0.969304, 3), NUTS_Transition{Array{Float64,1},Float64}([0.308731], -15.5211, 1, DoubledTurn, 0.965771, 1), NUTS_Transition{Array{Float64,1},Float64}([0.413317], -15.7461, 1, DoubledTurn, 0.949584, 1), NUTS_Transition{Array{Float64,1},Float64}([0.312683], -15.6984, 1, DoubledTurn, 1.0, 1), NUTS_Transition{Array{Float64,1},Float64}([0.659935], -16.4265, 1, AdjacentTurn, 0.858251, 3), NUTS_Transition{Array{Float64,1},Float64}([0.578155], -16.5263, 1, DoubledTurn, 1.0, 1), NUTS_Transition{Array{Float64,1},Float64}([0.314207], -15.9996, 1, DoubledTurn, 1.0, 1), NUTS_Transition{Array{Float64,1},Float64}([-0.426856], -18.4964, 2, DoubledTurn, 0.634618, 3), NUTS_Transition{Array{Float64,1},Float64}([-0.796105], -16.9495, 2, DoubledTurn, 0.916364, 3), NUTS_Transition{Array{Float64,1},Float64}([-0.796105], -17.6699, 1, DoubledTurn, 0.882216, 1)  …  NUTS_Transition{Array{Float64,1},Float64}([0.247196], -15.4171, 1, DoubledTurn, 0.968923, 1), NUTS_Transition{Array{Float64,1},Float64}([-0.617938], -17.0945, 1, AdjacentTurn, 0.736469, 3), NUTS_Transition{Array{Float64,1},Float64}([-0.0196956], -16.2298, 1, AdjacentTurn, 1.0, 3), NUTS_Transition{Array{Float64,1},Float64}([-0.0527357], -15.2635, 2, DoubledTurn, 0.998119, 3), NUTS_Transition{Array{Float64,1},Float64}([0.0426447], -15.3042, 2, DoubledTurn, 0.9926, 3), NUTS_Transition{Array{Float64,1},Float64}([0.55867], -16.2402, 1, AdjacentTurn, 0.811784, 3), NUTS_Transition{Array{Float64,1},Float64}([0.364429], -16.9957, 2, DoubledTurn, 0.91296, 3), NUTS_Transition{Array{Float64,1},Float64}([0.29596], -15.6187, 1, DoubledTurn, 1.0, 1), NUTS_Transition{Array{Float64,1},Float64}([0.311818], -15.5711, 1, DoubledTurn, 0.993342, 1), NUTS_Transition{Array{Float64,1},Float64}([-0.00353864], -15.5093, 1, AdjacentTurn, 0.99951, 3)], NUTS sampler in 1 dimensions
+  stepsize (ϵ) ≈ 0.967
   maximum depth = 5
-  Gaussian kinetic energy, √diag(M⁻¹): [0.4001]
-)</code></pre></div><p>To get the posterior for <span>$α$</span>, we need to use <code>get_position</code> and then transform</p><div><pre><code class="language-julia">posterior = transform.(Ref(∇P.transformation), get_position.(chain));</code></pre></div><p>Extract the parameter.</p><div><pre><code class="language-julia">posterior_α = first.(posterior);</code></pre></div><p>check the mean</p><div><pre><code class="language-julia">mean(posterior_α)</code></pre><pre><code class="language-none">0.4949053257471374</code></pre></div><p>check the effective sample size</p><div><pre><code class="language-julia">ess_α = effective_sample_size(posterior_α)</code></pre><pre><code class="language-none">265.39982762940923</code></pre></div><p>NUTS-specific statistics</p><div><pre><code class="language-julia">NUTS_statistics(chain)</code></pre><pre><code class="language-none">Hamiltonian Monte Carlo sample of length 1000
-  acceptance rate mean: 0.92, min/25%/median/75%/max: 0.32 0.88 0.97 1.0 1.0
-  termination: AdjacentTurn =&gt; 28% DoubledTurn =&gt; 72%
-  depth: 1 =&gt; 66% 2 =&gt; 34%</code></pre></div><p><em>This page was generated using <a href="https://github.com/fredrikekre/Literate.jl">Literate.jl</a>.</em></p><footer><hr/><a class="previous" href="index.html"><span class="direction">Previous</span><span class="title">Overview</span></a></footer></article></body></html>
+  Gaussian kinetic energy, √diag(M⁻¹): [0.449441]
+)</code></pre></div><p>To get the posterior for <span>$α$</span>, we need to use <code>get_position</code> and then transform</p><div><pre><code class="language-julia">posterior = transform.(Ref(∇P.transformation), get_position.(chain));</code></pre></div><p>Extract the parameter.</p><div><pre><code class="language-julia">posterior_α = first.(posterior);</code></pre></div><p>check the mean</p><div><pre><code class="language-julia">mean(posterior_α)</code></pre><pre><code class="language-none">0.49908427887376866</code></pre></div><p>check the effective sample size</p><div><pre><code class="language-julia">ess_α = effective_sample_size(posterior_α)</code></pre><pre><code class="language-none">373.25741053197487</code></pre></div><p>NUTS-specific statistics</p><div><pre><code class="language-julia">NUTS_statistics(chain)</code></pre><pre><code class="language-none">Hamiltonian Monte Carlo sample of length 1000
+  acceptance rate mean: 0.92, min/25%/median/75%/max: 0.28 0.89 0.97 1.0 1.0
+  termination: AdjacentTurn =&gt; 33% DoubledTurn =&gt; 67%
+  depth: 1 =&gt; 67% 2 =&gt; 33%</code></pre></div><p><em>This page was generated using <a href="https://github.com/fredrikekre/Literate.jl">Literate.jl</a>.</em></p><footer><hr/><a class="previous" href="index.html"><span class="direction">Previous</span><span class="title">Overview</span></a><a class="next" href="example_linear_regression.html"><span class="direction">Next</span><span class="title">Linear regression</span></a></footer></article></body></html>
