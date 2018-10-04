@@ -49,7 +49,7 @@ p((α = 0.5, ))
 # The helper packages `TransformVariables` and `LogDensityProblems` take care of
 # this. We use a flat prior (the default, omitted)
 
-P = TransformedBayesianProblem(to_tuple((α = to_𝕀,)), p);
+P = TransformedLogDensity(as((α = as𝕀,)), p)
 ∇P = ForwardDiffLogDensity(P);
 
 # Finally, we sample from the posterior. `chain` holds the chain (positions and
