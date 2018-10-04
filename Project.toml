@@ -4,6 +4,7 @@ authors = ["Tamas K. Papp <tkpapp@gmail.com>"]
 version = "0.1.0"
 
 [deps]
+Distributions = "31c24e10-a181-5473-b8eb-7969acd0382f"
 DynamicHMC = "bbc10e6e-7c05-544b-b16e-64fede858acb"
 LogDensityProblems = "6fdf6af0-433a-55f7-b3ed-c6c6e0b8df7c"
 MCMCDiagnostics = "6e857e4b-079a-58c4-aeab-bc2670384359"

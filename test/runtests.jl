@@ -11,4 +11,9 @@ Random.seed!(UInt32[0x57a97f0d, 0x1a38664c, 0x0dddb228, 0x7dbba96f])
     @test ess_α ≥ 200
 end
 
+@testset "linear regression" begin
+    include(rel_path("example_linear_regression.jl"))
+    @test length(ess) == 4
+end
+
 include("../docs/make.jl")
