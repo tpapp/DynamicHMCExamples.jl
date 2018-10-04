@@ -105,7 +105,9 @@ version = "0.5.0"
 
 [[DynamicHMC]]
 deps = ["ArgCheck", "DataStructures", "DocStringExtensions", "LinearAlgebra", "LogDensityProblems", "Parameters", "Random", "Statistics", "StatsFuns", "TransformVariables"]
-path = "/home/tamas/code/julia/DynamicHMC"
+git-tree-sha1 = "b1eab30a53241528af870c21135322b4115e9349"
+repo-rev = "master"
+repo-url = "https://github.com/tpapp/DynamicHMC.jl.git"
 uuid = "bbc10e6e-7c05-544b-b16e-64fede858acb"
 version = "0.1.0"
 
