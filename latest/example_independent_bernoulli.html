@@ -15,43 +15,25 @@ struct BernoulliProblem
     &quot;Number of draws `==1` in the data&quot;
     s::Int
 end</code></pre><pre><code class="language-none">Main.ex-example_independent_bernoulli.BernoulliProblem</code></pre></div><p>Then make the type callable with the parameters <em>as a single argument</em>.  We use decomposition in the arguments, but it could be done inside the function, too.</p><div><pre><code class="language-julia">function (problem::BernoulliProblem)((α, )::NamedTuple{(:α, )})
-    @unpack n, s = problem        # extract the data
-    s * log(α) + (n-s) * log(1-α) # log likelihood
+    @unpack n, s = problem        # extract the data</code></pre></div><p>log likelihood: the constant log(combinations(n, s)) term has been dropped since it is irrelevant to sampling.</p><div><pre><code class="language-julia">    s * log(α) + (n-s) * log(1-α)
 end</code></pre></div><p>We should test this, also, this would be a good place to benchmark and optimize more complicated problems.</p><div><pre><code class="language-julia">p = BernoulliProblem(20, 10)
 p((α = 0.5, ))</code></pre><pre><code class="language-none">-13.862943611198906</code></pre></div><p>Recall that we need to</p><ol><li><p>transform from <span>$ℝ$</span> to the valid parameter domain <code>(0,1)</code> for more efficient sampling, and</p></li><li><p>calculate the derivatives for this transformed mapping.</p></li></ol><p>The helper packages <code>TransformVariables</code> and <code>LogDensityProblems</code> take care of this. We use a flat prior (the default, omitted)</p><div><pre><code class="language-julia">P = TransformedLogDensity(as((α = as𝕀,)), p)
 ∇P = ForwardDiffLogDensity(P);</code></pre></div><p>Finally, we sample from the posterior. <code>chain</code> holds the chain (positions and diagnostic information), while the second returned value is the tuned sampler which would allow continuation of sampling.</p><div><pre><code class="language-julia">chain, NUTS_tuned = NUTS_init_tune_mcmc(∇P, 1000)</code></pre><pre><code class="language-none">MCMC, adapting ϵ (75 steps)
- ...done
+0.0017 s/step ...done
 MCMC, adapting ϵ (25 steps)
- ...done
+3.5e-5 s/step ...done
 MCMC, adapting ϵ (50 steps)
- ...done
+0.0031 s/step ...done
 MCMC, adapting ϵ (100 steps)
-step 100/100, 36.0 s/step
- ...done
+2.9e-5 s/step ...done
 MCMC, adapting ϵ (200 steps)
-step 100/200, 34.0 s/step
-step 200/200, 28.0 s/step
- ...done
+2.6e-5 s/step ...done
 MCMC, adapting ϵ (400 steps)
-step 100/400, 34.0 s/step
-step 200/400, 30.0 s/step
-step 300/400, 30.0 s/step
-step 400/400, 29.0 s/step
- ...done
+2.5e-5 s/step ...done
 MCMC, adapting ϵ (50 steps)
- ...done
+2.8e-5 s/step ...done
 MCMC (1000 steps)
-step 100/1000, 27.0 s/step
-step 200/1000, 28.0 s/step
-step 300/1000, 26.0 s/step
-step 400/1000, 27.0 s/step
-step 500/1000, 25.0 s/step
-step 600/1000, 25.0 s/step
-step 700/1000, 26.0 s/step
-step 800/1000, 26.0 s/step
-step 900/1000, 27.0 s/step
-step 1000/1000, 28.0 s/step
- ...done
+3.8e-5 s/step ...done
 (NUTS_Transition{Array{Float64,1},Float64}[NUTS_Transition{Array{Float64,1},Float64}([0.213303], -15.3989, 1, AdjacentTurn, 0.969304, 3), NUTS_Transition{Array{Float64,1},Float64}([0.308731], -15.5211, 1, DoubledTurn, 0.965771, 1), NUTS_Transition{Array{Float64,1},Float64}([0.413317], -15.7461, 1, DoubledTurn, 0.949584, 1), NUTS_Transition{Array{Float64,1},Float64}([0.312683], -15.6984, 1, DoubledTurn, 1.0, 1), NUTS_Transition{Array{Float64,1},Float64}([0.659935], -16.4265, 1, AdjacentTurn, 0.858251, 3), NUTS_Transition{Array{Float64,1},Float64}([0.578155], -16.5263, 1, DoubledTurn, 1.0, 1), NUTS_Transition{Array{Float64,1},Float64}([0.314207], -15.9996, 1, DoubledTurn, 1.0, 1), NUTS_Transition{Array{Float64,1},Float64}([-0.426856], -18.4964, 2, DoubledTurn, 0.634618, 3), NUTS_Transition{Array{Float64,1},Float64}([-0.796105], -16.9495, 2, DoubledTurn, 0.916364, 3), NUTS_Transition{Array{Float64,1},Float64}([-0.796105], -17.6699, 1, DoubledTurn, 0.882216, 1)  …  NUTS_Transition{Array{Float64,1},Float64}([0.247196], -15.4171, 1, DoubledTurn, 0.968923, 1), NUTS_Transition{Array{Float64,1},Float64}([-0.617938], -17.0945, 1, AdjacentTurn, 0.736469, 3), NUTS_Transition{Array{Float64,1},Float64}([-0.0196956], -16.2298, 1, AdjacentTurn, 1.0, 3), NUTS_Transition{Array{Float64,1},Float64}([-0.0527357], -15.2635, 2, DoubledTurn, 0.998119, 3), NUTS_Transition{Array{Float64,1},Float64}([0.0426447], -15.3042, 2, DoubledTurn, 0.9926, 3), NUTS_Transition{Array{Float64,1},Float64}([0.55867], -16.2402, 1, AdjacentTurn, 0.811784, 3), NUTS_Transition{Array{Float64,1},Float64}([0.364429], -16.9957, 2, DoubledTurn, 0.91296, 3), NUTS_Transition{Array{Float64,1},Float64}([0.29596], -15.6187, 1, DoubledTurn, 1.0, 1), NUTS_Transition{Array{Float64,1},Float64}([0.311818], -15.5711, 1, DoubledTurn, 0.993342, 1), NUTS_Transition{Array{Float64,1},Float64}([-0.00353864], -15.5093, 1, AdjacentTurn, 0.99951, 3)], NUTS sampler in 1 dimensions
   stepsize (ϵ) ≈ 0.967
   maximum depth = 5
