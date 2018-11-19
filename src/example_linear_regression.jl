@@ -4,7 +4,7 @@
 # First, we load the packages we use.
 
 using TransformVariables, LogDensityProblems, DynamicHMC, MCMCDiagnostics,
-    Parameters, Statistics, Distributions
+    Parameters, Statistics, Distributions, ForwardDiff
 
 # Then define a structure to hold the data: observables, covariates, and the degrees of freedom for the prior.
 
@@ -50,7 +50,7 @@ problem_transformation(p::LinearRegressionProblem) =
 # Wrap the problem with a transformation, then use Flux for the gradient.
 
 P = TransformedLogDensity(problem_transformation(p), p)
-∇P = FluxGradientLogDensity(P);
+∇P = ADgradient(:ForwardDiff, P);
 
 # Finally, we sample from the posterior. `chain` holds the chain (positions and
 # diagnostic information), while the second returned value is the tuned sampler

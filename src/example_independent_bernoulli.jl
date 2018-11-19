@@ -50,7 +50,7 @@ p((α = 0.5, ))
 # this. We use a flat prior (the default, omitted)
 
 P = TransformedLogDensity(as((α = as𝕀,)), p)
-∇P = ForwardDiffLogDensity(P);
+∇P = ADgradient(:ForwardDiff, P);
 
 # Finally, we sample from the posterior. `chain` holds the chain (positions and
 # diagnostic information), while the second returned value is the tuned sampler
