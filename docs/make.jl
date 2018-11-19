@@ -9,7 +9,7 @@ Random.seed!(UInt32[0x57a97f0d, 0x1a38664c, 0x0dddb228, 0x7dbba96f])
 
 DOCROOT = rel_path("../docs")
 DOCSOURCE = joinpath(DOCROOT, "src")
-EXAMPLES = ["independent_bernoulli", "linear_regression"]
+EXAMPLES = ["independent_bernoulli", "linear_regression", "logistic_regression"]
 
 for example in EXAMPLES
     Literate.markdown(rel_path("example_$(example).jl"), DOCSOURCE)
