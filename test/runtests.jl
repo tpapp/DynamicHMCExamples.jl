@@ -16,4 +16,7 @@ end
     @test length(ess) == 4
 end
 
-include("../docs/make.jl")
+@testset "linear regression" begin
+    include(rel_path("example_logistic_regression.jl"))
+    @test all(ess .≥ 400)
+end
