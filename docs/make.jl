@@ -20,7 +20,6 @@ end
 
 makedocs(root = DOCROOT,
          modules = Module[],
-         format = :html,
          sitename = "DynamicHMCExamples.jl",
          pages = vcat(Any["index.md"],
                       Any["example_$(example).md" for example in EXAMPLES]))
