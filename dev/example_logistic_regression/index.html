@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en"><head><meta charset="UTF-8"/><meta name="viewport" content="width=device-width, initial-scale=1.0"/><title>Logistic regression · DynamicHMCExamples.jl</title><link href="https://cdnjs.cloudflare.com/ajax/libs/normalize/4.2.0/normalize.min.css" rel="stylesheet" type="text/css"/><link href="https://fonts.googleapis.com/css?family=Lato|Roboto+Mono" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.6.3/css/font-awesome.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/styles/default.min.css" rel="stylesheet" type="text/css"/><script>documenterBaseURL=".."</script><script src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.2.0/require.min.js" data-main="../assets/documenter.js"></script><script src="../siteinfo.js"></script><script src="../../versions.js"></script><link href="../assets/documenter.css" rel="stylesheet" type="text/css"/></head><body><nav class="toc"><h1>DynamicHMCExamples.jl</h1><select id="version-selector" onChange="window.location.href=this.value" style="visibility: hidden"></select><form class="search" id="search-form" action="../search/"><input id="search-query" name="q" type="text" placeholder="Search docs"/></form><ul><li><a class="toctext" href="../">Overview</a></li><li><a class="toctext" href="../example_independent_bernoulli/">Estimate Bernoulli draws probabilility</a></li><li><a class="toctext" href="../example_linear_regression/">Linear regression</a></li><li class="current"><a class="toctext" href>Logistic regression</a><ul class="internal"></ul></li></ul></nav><article id="docs"><header><nav><ul><li><a href>Logistic regression</a></li></ul><a class="edit-page" href="https://github.com/tpapp/DynamicHMCExamples.jl/blob/master/src/example_logistic_regression.jl"><span class="fa"></span> Edit on GitHub</a></nav><hr/><div id="topbar"><span>Logistic regression</span><a class="fa fa-bars" href="#"></a></div></header><h1><a class="nav-anchor" id="Logistic-regression-1" href="#Logistic-regression-1">Logistic regression</a></h1><pre><code class="language-">using TransformVariables, LogDensityProblems, DynamicHMC, MCMCDiagnostics, Parameters,
+<html lang="en"><head><meta charset="UTF-8"/><meta name="viewport" content="width=device-width, initial-scale=1.0"/><title>Logistic regression · DynamicHMCExamples.jl</title><link href="https://cdnjs.cloudflare.com/ajax/libs/normalize/4.2.0/normalize.min.css" rel="stylesheet" type="text/css"/><link href="https://fonts.googleapis.com/css?family=Lato|Roboto+Mono" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.6.3/css/font-awesome.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/styles/default.min.css" rel="stylesheet" type="text/css"/><script>documenterBaseURL=".."</script><script src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.2.0/require.min.js" data-main="../assets/documenter.js"></script><script src="../siteinfo.js"></script><script src="../../versions.js"></script><link href="../assets/documenter.css" rel="stylesheet" type="text/css"/></head><body><nav class="toc"><h1>DynamicHMCExamples.jl</h1><select id="version-selector" onChange="window.location.href=this.value" style="visibility: hidden"></select><form class="search" id="search-form" action="../search/"><input id="search-query" name="q" type="text" placeholder="Search docs"/></form><ul><li><a class="toctext" href="../">Overview</a></li><li><a class="toctext" href="../example_independent_bernoulli/">Estimate Bernoulli draws probabilility</a></li><li><a class="toctext" href="../example_linear_regression/">Linear regression</a></li><li class="current"><a class="toctext" href>Logistic regression</a><ul class="internal"></ul></li></ul></nav><article id="docs"><header><nav><ul><li><a href>Logistic regression</a></li></ul><a class="edit-page" href="https://github.com/tpapp/DynamicHMCExamples.jl/blob/master/src/example_logistic_regression.jl"><span class="fa"></span> Edit on GitHub</a></nav><hr/><div id="topbar"><span>Logistic regression</span><a class="fa fa-bars" href="#"></a></div></header><h1><a class="nav-anchor" id="Logistic-regression-1" href="#Logistic-regression-1">Logistic regression</a></h1><div><pre><code class="language-julia">using TransformVariables, LogDensityProblems, DynamicHMC, MCMCDiagnostics, Parameters,
     Distributions, Statistics, StatsFuns, ForwardDiff
 
 &quot;&quot;&quot;
@@ -21,13 +21,37 @@ function (problem::LogisticRegression)(θ)
     loglik = sum(logpdf.(Bernoulli.(logistic.(X*β)), y))
     logpri = sum(logpdf.(Ref(Normal(0, σ)), β))
     loglik + logpri
-end</code></pre><p>Make up parameters, generate data using random draws.</p><pre><code class="language-">N = 1000
+end</code></pre></div><p>Make up parameters, generate data using random draws.</p><div><pre><code class="language-julia">N = 1000
 β = [1.0, 2.0]
 X = hcat(ones(N), randn(N))
-y = rand.(Bernoulli.(logistic.(X*β)));</code></pre><p>Create a problem, apply a transformation, then use automatic differentiation.</p><pre><code class="language-">p = LogisticRegression(y, X, 10.0)   # data and (vague) priors
+y = rand.(Bernoulli.(logistic.(X*β)));</code></pre></div><p>Create a problem, apply a transformation, then use automatic differentiation.</p><div><pre><code class="language-julia">p = LogisticRegression(y, X, 10.0)   # data and (vague) priors
 t = as((β = as(Array, length(β)), )) # identity transformation, just to get the dimension
 P = TransformedLogDensity(t, p)      # transformed
-∇P = ADgradient(:ForwardDiff, P)</code></pre><p>Sample using NUTS, random starting point.</p><pre><code class="language-">chain, NUTS_tuned = NUTS_init_tune_mcmc(∇P, 1000);</code></pre><p>Extract the posterior. Here the transformation was not really necessary.</p><pre><code class="language-">β_posterior = first.(transform.(Ref(∇P.transformation), get_position.(chain)));</code></pre><p>Check that we recover the parameters.</p><pre><code class="language-">mean(β_posterior)</code></pre><p>Quantiles</p><pre><code class="language-">qs = [0.05, 0.25, 0.5, 0.75, 0.95]
+∇P = ADgradient(:ForwardDiff, P)</code></pre><pre><code class="language-none">ForwardDiff AD wrapper for TransformedLogDensity of dimension 2, w/ chunk size 2</code></pre></div><p>Sample using NUTS, random starting point.</p><div><pre><code class="language-julia">chain, NUTS_tuned = NUTS_init_tune_mcmc(∇P, 1000);</code></pre><pre><code class="language-none">MCMC, adapting ϵ (75 steps)
+0.0019 s/step ...done
+MCMC, adapting ϵ (25 steps)
+0.00083 s/step ...done
+MCMC, adapting ϵ (50 steps)
+0.003 s/step ...done
+MCMC, adapting ϵ (100 steps)
+0.00042 s/step ...done
+MCMC, adapting ϵ (200 steps)
+0.00036 s/step ...done
+MCMC, adapting ϵ (400 steps)
+0.00031 s/step ...done
+MCMC, adapting ϵ (50 steps)
+0.00033 s/step ...done
+MCMC (1000 steps)
+0.00026 s/step ...done</code></pre></div><p>Extract the posterior. Here the transformation was not really necessary.</p><div><pre><code class="language-julia">β_posterior = first.(transform.(Ref(∇P.transformation), get_position.(chain)));</code></pre></div><p>Check that we recover the parameters.</p><div><pre><code class="language-julia">mean(β_posterior)</code></pre><pre><code class="language-none">2-element Array{Float64,1}:
+ 0.972741478171941
+ 1.8873445556639992</code></pre></div><p>Quantiles</p><div><pre><code class="language-julia">qs = [0.05, 0.25, 0.5, 0.75, 0.95]
 quantile(first.(β_posterior), qs)
 
-quantile(last.(β_posterior), qs)</code></pre><p>Check that mixing is good.</p><pre><code class="language-">ess = vec(mapslices(effective_sample_size, reduce(hcat, β_posterior); dims = 2))</code></pre><p><em>This page was generated using <a href="https://github.com/fredrikekre/Literate.jl">Literate.jl</a>.</em></p><footer><hr/><a class="previous" href="../example_linear_regression/"><span class="direction">Previous</span><span class="title">Linear regression</span></a></footer></article></body></html>
+quantile(last.(β_posterior), qs)</code></pre><pre><code class="language-none">5-element Array{Float64,1}:
+ 1.6798680816901668
+ 1.8022679194377522
+ 1.8832554076159058
+ 1.9627505993864058
+ 2.1006913874621223</code></pre></div><p>Check that mixing is good.</p><div><pre><code class="language-julia">ess = vec(mapslices(effective_sample_size, reduce(hcat, β_posterior); dims = 2))</code></pre><pre><code class="language-none">2-element Array{Float64,1}:
+ 898.7188417546691
+ 968.3226617460994</code></pre></div><p><em>This page was generated using <a href="https://github.com/fredrikekre/Literate.jl">Literate.jl</a>.</em></p><footer><hr/><a class="previous" href="../example_linear_regression/"><span class="direction">Previous</span><span class="title">Linear regression</span></a></footer></article></body></html>
