@@ -27,8 +27,8 @@ jobs:
         - julia --project=docs --color=yes docs/make.jl
       after_success: skip
 
-before_script:
-  - julia -e 'using Pkg; pkg"up"'
+# before_script:
+#   - julia -e 'using Pkg; pkg"up"'
 
 after_success:
   - julia --project=test/coverage -e 'using Pkg; Pkg.instantiate()'
