@@ -31,7 +31,9 @@ end
 
 function (problem::BernoulliProblem)((α, )::NamedTuple{(:α, )})
     @unpack n, s = problem        # extract the data
-    s * log(α) + (n-s) * log(1-α) # log likelihood
+    # log likelihood: the constant log(combinations(n, s)) term
+    # has been dropped since it is irrelevant to sampling.
+    s * log(α) + (n-s) * log(1-α)
 end
 
 # We should test this, also, this would be a good place to benchmark and
