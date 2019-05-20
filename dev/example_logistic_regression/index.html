@@ -28,30 +28,30 @@ y = rand.(Bernoulli.(logistic.(X*β)));</code></pre></div><p>Create a problem, a
 t = as((β = as(Array, length(β)), )) # identity transformation, just to get the dimension
 P = TransformedLogDensity(t, p)      # transformed
 ∇P = ADgradient(:ForwardDiff, P)</code></pre><pre><code class="language-none">ForwardDiff AD wrapper for TransformedLogDensity of dimension 2, w/ chunk size 2</code></pre></div><p>Sample using NUTS, random starting point.</p><div><pre><code class="language-julia">chain, NUTS_tuned = NUTS_init_tune_mcmc(∇P, 1000);</code></pre><pre><code class="language-none">MCMC, adapting ϵ (75 steps)
-0.0019 s/step ...done
+0.0018 s/step ...done
 MCMC, adapting ϵ (25 steps)
-0.00083 s/step ...done
+0.00096 s/step ...done
 MCMC, adapting ϵ (50 steps)
-0.003 s/step ...done
+0.0031 s/step ...done
 MCMC, adapting ϵ (100 steps)
 0.00042 s/step ...done
 MCMC, adapting ϵ (200 steps)
 0.00036 s/step ...done
 MCMC, adapting ϵ (400 steps)
-0.00031 s/step ...done
+0.00037 s/step ...done
 MCMC, adapting ϵ (50 steps)
-0.00033 s/step ...done
+0.00046 s/step ...done
 MCMC (1000 steps)
-0.00026 s/step ...done</code></pre></div><p>Extract the posterior. Here the transformation was not really necessary.</p><div><pre><code class="language-julia">β_posterior = first.(transform.(Ref(∇P.transformation), get_position.(chain)));</code></pre></div><p>Check that we recover the parameters.</p><div><pre><code class="language-julia">mean(β_posterior)</code></pre><pre><code class="language-none">2-element Array{Float64,1}:
- 0.972741478171941
- 1.8873445556639992</code></pre></div><p>Quantiles</p><div><pre><code class="language-julia">qs = [0.05, 0.25, 0.5, 0.75, 0.95]
+0.0003 s/step ...done</code></pre></div><p>Extract the posterior. Here the transformation was not really necessary.</p><div><pre><code class="language-julia">β_posterior = first.(transform.(Ref(t), get_position.(chain)));</code></pre></div><p>Check that we recover the parameters.</p><div><pre><code class="language-julia">mean(β_posterior)</code></pre><pre><code class="language-none">2-element Array{Float64,1}:
+ 0.8686907516666621
+ 2.1151669923459138</code></pre></div><p>Quantiles</p><div><pre><code class="language-julia">qs = [0.05, 0.25, 0.5, 0.75, 0.95]
 quantile(first.(β_posterior), qs)
 
 quantile(last.(β_posterior), qs)</code></pre><pre><code class="language-none">5-element Array{Float64,1}:
- 1.6798680816901668
- 1.8022679194377522
- 1.8832554076159058
- 1.9627505993864058
- 2.1006913874621223</code></pre></div><p>Check that mixing is good.</p><div><pre><code class="language-julia">ess = vec(mapslices(effective_sample_size, reduce(hcat, β_posterior); dims = 2))</code></pre><pre><code class="language-none">2-element Array{Float64,1}:
- 898.7188417546691
- 968.3226617460994</code></pre></div><p><em>This page was generated using <a href="https://github.com/fredrikekre/Literate.jl">Literate.jl</a>.</em></p><footer><hr/><a class="previous" href="../example_linear_regression/"><span class="direction">Previous</span><span class="title">Linear regression</span></a></footer></article></body></html>
+ 1.8979232582308971
+ 2.026092883269106
+ 2.107742988654445
+ 2.203026214362809
+ 2.348364817141937</code></pre></div><p>Check that mixing is good.</p><div><pre><code class="language-julia">ess = vec(mapslices(effective_sample_size, reduce(hcat, β_posterior); dims = 2))</code></pre><pre><code class="language-none">2-element Array{Float64,1}:
+ 909.1655239284711
+ 905.6958886420647</code></pre></div><p><em>This page was generated using <a href="https://github.com/fredrikekre/Literate.jl">Literate.jl</a>.</em></p><footer><hr/><a class="previous" href="../example_linear_regression/"><span class="direction">Previous</span><span class="title">Linear regression</span></a></footer></article></body></html>

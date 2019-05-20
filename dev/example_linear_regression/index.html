@@ -23,28 +23,29 @@ X = hcat(ones(N), randn(N, 2));
 σ = 0.5
 y = X*β .+ randn(N) .* σ;
 p = LinearRegressionProblem(y, X, 1.0);
-p((β = β, σ = σ))</code></pre><pre><code class="language-none">-75.14108209749804</code></pre></div><p>For this problem, we write a function to return the transformation (as it varies with the number of covariates).</p><div><pre><code class="language-julia">problem_transformation(p::LinearRegressionProblem) =
-    as((β = as(Array, size(p.X, 2)), σ = asℝ₊))</code></pre></div><p>Wrap the problem with a transformation, then use Flux for the gradient.</p><div><pre><code class="language-julia">P = TransformedLogDensity(problem_transformation(p), p)
+p((β = β, σ = σ))</code></pre><pre><code class="language-none">-64.86685696877704</code></pre></div><p>For this problem, we write a function to return the transformation (as it varies with the number of covariates).</p><div><pre><code class="language-julia">problem_transformation(p::LinearRegressionProblem) =
+    as((β = as(Array, size(p.X, 2)), σ = asℝ₊))</code></pre></div><p>Wrap the problem with a transformation, then use Flux for the gradient.</p><div><pre><code class="language-julia">t = problem_transformation(p)
+P = TransformedLogDensity(t, p)
 ∇P = ADgradient(:ForwardDiff, P);</code></pre></div><p>Finally, we sample from the posterior. <code>chain</code> holds the chain (positions and diagnostic information), while the second returned value is the tuned sampler which would allow continuation of sampling.</p><div><pre><code class="language-julia">chain, NUTS_tuned = NUTS_init_tune_mcmc(∇P, 1000);</code></pre><pre><code class="language-none">MCMC, adapting ϵ (75 steps)
-0.0015 s/step ...done
+0.0016 s/step ...done
 MCMC, adapting ϵ (25 steps)
-0.00011 s/step ...done
-MCMC, adapting ϵ (50 steps)
-0.0034 s/step ...done
-MCMC, adapting ϵ (100 steps)
-0.0002 s/step ...done
-MCMC, adapting ϵ (200 steps)
-8.6e-5 s/step ...done
-MCMC, adapting ϵ (400 steps)
-0.00011 s/step ...done
-MCMC, adapting ϵ (50 steps)
 0.00012 s/step ...done
+MCMC, adapting ϵ (50 steps)
+0.0042 s/step ...done
+MCMC, adapting ϵ (100 steps)
+0.00022 s/step ...done
+MCMC, adapting ϵ (200 steps)
+9.1e-5 s/step ...done
+MCMC, adapting ϵ (400 steps)
+9.9e-5 s/step ...done
+MCMC, adapting ϵ (50 steps)
+8.0e-5 s/step ...done
 MCMC (1000 steps)
-0.00011 s/step ...done</code></pre></div><p>We use the transformation to obtain the posterior from the chain.</p><div><pre><code class="language-julia">posterior = transform.(Ref(∇P.transformation), get_position.(chain));</code></pre></div><p>Extract the parameter posterior means: <code>β</code>,</p><div><pre><code class="language-julia">posterior_β = mean(first, posterior)</code></pre><pre><code class="language-none">3-element Array{Float64,1}:
-  0.9686421148626997
-  2.041787709881852
- -0.9694186472311874</code></pre></div><p>then <code>σ</code>:</p><div><pre><code class="language-julia">posterior_σ = mean(last, posterior)</code></pre><pre><code class="language-none">0.514295105943548</code></pre></div><p>Effective sample sizes (of untransformed draws)</p><div><pre><code class="language-julia">ess = mapslices(effective_sample_size,
-                get_position_matrix(chain); dims = 1)</code></pre></div><p>NUTS-specific statistics</p><div><pre><code class="language-julia">NUTS_statistics(chain)</code></pre><pre><code class="language-none">Hamiltonian Monte Carlo sample of length 1000
-  acceptance rate mean: 0.92, min/25%/median/75%/max: 0.45 0.88 0.96 0.99 1.0
-  termination: AdjacentTurn =&gt; 14% DoubledTurn =&gt; 86%
-  depth: 1 =&gt; 1% 2 =&gt; 44% 3 =&gt; 55%</code></pre></div><p><em>This page was generated using <a href="https://github.com/fredrikekre/Literate.jl">Literate.jl</a>.</em></p><footer><hr/><a class="previous" href="../example_independent_bernoulli/"><span class="direction">Previous</span><span class="title">Estimate Bernoulli draws probabilility</span></a><a class="next" href="../example_logistic_regression/"><span class="direction">Next</span><span class="title">Logistic regression</span></a></footer></article></body></html>
+0.00014 s/step ...done</code></pre></div><p>We use the transformation to obtain the posterior from the chain.</p><div><pre><code class="language-julia">posterior = transform.(Ref(t), get_position.(chain));</code></pre></div><p>Extract the parameter posterior means: <code>β</code>,</p><div><pre><code class="language-julia">posterior_β = mean(first, posterior)</code></pre><pre><code class="language-none">3-element Array{Float64,1}:
+  0.911822798970728
+  1.953431939325185
+ -1.0255361984469231</code></pre></div><p>then <code>σ</code>:</p><div><pre><code class="language-julia">posterior_σ = mean(last, posterior)</code></pre><pre><code class="language-none">0.45512285517399037</code></pre></div><p>Effective sample sizes (of untransformed draws)</p><div><pre><code class="language-julia">ess = mapslices(effective_sample_size, get_position_matrix(chain); dims = 1)</code></pre><pre><code class="language-none">1×4 Array{Float64,2}:
+ 970.836  1000.0  946.105  1000.0</code></pre></div><p>NUTS-specific statistics</p><div><pre><code class="language-julia">NUTS_statistics(chain)</code></pre><pre><code class="language-none">Hamiltonian Monte Carlo sample of length 1000
+  acceptance rate mean: 0.89, min/25%/median/75%/max: 0.47 0.84 0.93 0.98 1.0
+  termination: AdjacentTurn =&gt; 36% DoubledTurn =&gt; 64%
+  depth: 1 =&gt; 2% 2 =&gt; 68% 3 =&gt; 16% 4 =&gt; 12% 5 =&gt; 2% 6 =&gt; 0%</code></pre></div><p><em>This page was generated using <a href="https://github.com/fredrikekre/Literate.jl">Literate.jl</a>.</em></p><footer><hr/><a class="previous" href="../example_independent_bernoulli/"><span class="direction">Previous</span><span class="title">Estimate Bernoulli draws probabilility</span></a><a class="next" href="../example_logistic_regression/"><span class="direction">Next</span><span class="title">Logistic regression</span></a></footer></article></body></html>
