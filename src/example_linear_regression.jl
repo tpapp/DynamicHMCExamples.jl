@@ -49,7 +49,8 @@ problem_transformation(p::LinearRegressionProblem) =
 
 # Wrap the problem with a transformation, then use Flux for the gradient.
 
-P = TransformedLogDensity(problem_transformation(p), p)
+t = problem_transformation(p)
+P = TransformedLogDensity(t, p)
 ∇P = ADgradient(:ForwardDiff, P);
 
 # Finally, we sample from the posterior. `chain` holds the chain (positions and
@@ -60,7 +61,7 @@ chain, NUTS_tuned = NUTS_init_tune_mcmc(∇P, 1000);
 
 # We use the transformation to obtain the posterior from the chain.
 
-posterior = transform.(Ref(∇P.transformation), get_position.(chain));
+posterior = transform.(Ref(t), get_position.(chain));
 
 # Extract the parameter posterior means: `β`,
 
@@ -72,8 +73,7 @@ posterior_σ = mean(last, posterior)
 
 # Effective sample sizes (of untransformed draws)
 
-ess = mapslices(effective_sample_size,
-                get_position_matrix(chain); dims = 1)
+ess = mapslices(effective_sample_size, get_position_matrix(chain); dims = 1)
 
 # NUTS-specific statistics
 

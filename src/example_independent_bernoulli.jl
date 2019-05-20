@@ -51,7 +51,8 @@ p((α = 0.5, ))
 # The helper packages `TransformVariables` and `LogDensityProblems` take care of
 # this. We use a flat prior (the default, omitted)
 
-P = TransformedLogDensity(as((α = as𝕀,)), p)
+t = as((α = as𝕀,))
+P = TransformedLogDensity(t, p)
 ∇P = ADgradient(:ForwardDiff, P);
 
 # Finally, we sample from the posterior. `chain` holds the chain (positions and
@@ -63,7 +64,7 @@ chain, NUTS_tuned = NUTS_init_tune_mcmc(∇P, 1000)
 # To get the posterior for ``α``, we need to use `get_position` and
 # then transform
 
-posterior = transform.(Ref(∇P.transformation), get_position.(chain));
+posterior = transform.(Ref(t), get_position.(chain));
 
 # Extract the parameter.
 
