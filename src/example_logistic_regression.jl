@@ -44,7 +44,7 @@ chain, NUTS_tuned = NUTS_init_tune_mcmc(∇P, 1000);
 
 # Extract the posterior. Here the transformation was not really necessary.
 
-β_posterior = first.(transform.(Ref(∇P.transformation), get_position.(chain)));
+β_posterior = first.(transform.(Ref(t), get_position.(chain)));
 
 # Check that we recover the parameters.
 
