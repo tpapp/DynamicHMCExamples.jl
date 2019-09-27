@@ -18,7 +18,7 @@ The examples are in the [src/](./src/) directory as Julia source files, marked u
 
 Note that this is *not* an introduction to Bayesian inference, merely an implementation in Julia using a certain approach that I find advantageous. The focus is on coding the (log) posterior as a function, then passing this to a modern Hamiltonian Monte Carlo sampler (a variant of NUTS, as described in [Betancourt (2017)](https://arxiv.org/abs/1701.02434).
 
-The advantage of this approach is that you can debug, benchmark, and optimize your posterior calculations directly using the tools in Julia, like any other Julia code. In contrast to other libraries,
+The advantage of this approach is that you can [debug](https://github.com/JuliaDebug/Debugger.jl), [benchmark](https://github.com/JuliaCI/BenchmarkTools.jl), and [optimize](https://docs.julialang.org/en/v1/manual/performance-tips/) your posterior calculations directly using the tools in Julia, like any other Julia code. In contrast to other libraries,
 
 1. you don't need to use a DSL,
 2. you are not formulating your model as a directed acyclic graph,
