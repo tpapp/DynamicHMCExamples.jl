@@ -1,6 +1,8 @@
 <!DOCTYPE html>
-<html lang="en"><head><meta charset="UTF-8"/><meta name="viewport" content="width=device-width, initial-scale=1.0"/><title>Logistic regression · DynamicHMCExamples.jl</title><link href="https://cdnjs.cloudflare.com/ajax/libs/normalize/4.2.0/normalize.min.css" rel="stylesheet" type="text/css"/><link href="https://fonts.googleapis.com/css?family=Lato|Roboto+Mono" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.6.3/css/font-awesome.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/styles/default.min.css" rel="stylesheet" type="text/css"/><script>documenterBaseURL=".."</script><script src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.2.0/require.min.js" data-main="../assets/documenter.js"></script><script src="../siteinfo.js"></script><script src="../../versions.js"></script><link href="../assets/documenter.css" rel="stylesheet" type="text/css"/></head><body><nav class="toc"><h1>DynamicHMCExamples.jl</h1><select id="version-selector" onChange="window.location.href=this.value" style="visibility: hidden"></select><form class="search" id="search-form" action="../search/"><input id="search-query" name="q" type="text" placeholder="Search docs"/></form><ul><li><a class="toctext" href="../">Overview</a></li><li><a class="toctext" href="../example_independent_bernoulli/">Estimate Bernoulli draws probabilility</a></li><li><a class="toctext" href="../example_linear_regression/">Linear regression</a></li><li class="current"><a class="toctext" href>Logistic regression</a><ul class="internal"></ul></li></ul></nav><article id="docs"><header><nav><ul><li><a href>Logistic regression</a></li></ul><a class="edit-page" href="https://github.com/tpapp/DynamicHMCExamples.jl/blob/master/src/example_logistic_regression.jl"><span class="fa"></span> Edit on GitHub</a></nav><hr/><div id="topbar"><span>Logistic regression</span><a class="fa fa-bars" href="#"></a></div></header><h1><a class="nav-anchor" id="Logistic-regression-1" href="#Logistic-regression-1">Logistic regression</a></h1><div><pre><code class="language-julia">using TransformVariables, LogDensityProblems, DynamicHMC, MCMCDiagnostics, Parameters,
-    Distributions, Statistics, StatsFuns, ForwardDiff
+<html lang="en"><head><meta charset="UTF-8"/><meta name="viewport" content="width=device-width, initial-scale=1.0"/><title>Logistic regression · DynamicHMCExamples.jl</title><link href="https://cdnjs.cloudflare.com/ajax/libs/normalize/4.2.0/normalize.min.css" rel="stylesheet" type="text/css"/><link href="https://fonts.googleapis.com/css?family=Lato|Roboto+Mono" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.6.3/css/font-awesome.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/styles/default.min.css" rel="stylesheet" type="text/css"/><script>documenterBaseURL=".."</script><script src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.2.0/require.min.js" data-main="../assets/documenter.js"></script><script src="../siteinfo.js"></script><script src="../../versions.js"></script><link href="../assets/documenter.css" rel="stylesheet" type="text/css"/></head><body><nav class="toc"><h1>DynamicHMCExamples.jl</h1><select id="version-selector" onChange="window.location.href=this.value" style="visibility: hidden"></select><form class="search" id="search-form" action="../search/"><input id="search-query" name="q" type="text" placeholder="Search docs"/></form><ul><li><a class="toctext" href="../">Overview</a></li><li><a class="toctext" href="../example_independent_bernoulli/">Estimate Bernoulli draws probabilility</a></li><li><a class="toctext" href="../example_linear_regression/">Linear regression</a></li><li class="current"><a class="toctext" href>Logistic regression</a><ul class="internal"></ul></li></ul></nav><article id="docs"><header><nav><ul><li><a href>Logistic regression</a></li></ul><a class="edit-page" href="https://github.com/tpapp/DynamicHMCExamples.jl/blob/master/src/example_logistic_regression.jl"><span class="fa"></span> Edit on GitHub</a></nav><hr/><div id="topbar"><span>Logistic regression</span><a class="fa fa-bars" href="#"></a></div></header><h1><a class="nav-anchor" id="Logistic-regression-1" href="#Logistic-regression-1">Logistic regression</a></h1><pre><code class="language-julia">using TransformVariables, LogDensityProblems, DynamicHMC, DynamicHMC.Diagnostics
+using MCMCDiagnostics
+using Parameters, Statistics, Random, Distributions, StatsFuns
+import ForwardDiff              # use for AD
 
 &quot;&quot;&quot;
 Logistic regression.
@@ -21,37 +23,62 @@ function (problem::LogisticRegression)(θ)
     loglik = sum(logpdf.(Bernoulli.(logistic.(X*β)), y))
     logpri = sum(logpdf.(Ref(Normal(0, σ)), β))
     loglik + logpri
-end</code></pre></div><p>Make up parameters, generate data using random draws.</p><div><pre><code class="language-julia">N = 1000
+end</code></pre><p>Make up parameters, generate data using random draws.</p><pre><code class="language-julia">N = 1000
 β = [1.0, 2.0]
 X = hcat(ones(N), randn(N))
-y = rand.(Bernoulli.(logistic.(X*β)));</code></pre></div><p>Create a problem, apply a transformation, then use automatic differentiation.</p><div><pre><code class="language-julia">p = LogisticRegression(y, X, 10.0)   # data and (vague) priors
+y = rand.(Bernoulli.(logistic.(X*β)));</code></pre><pre><code class="language-none">1000-element BitArray{1}:
+ 0
+ 0
+ 0
+ 1
+ 0
+ 1
+ 0
+ 0
+ 1
+ 1
+ ⋮
+ 1
+ 0
+ 1
+ 1
+ 0
+ 0
+ 0
+ 0
+ 1</code></pre><p>Create a problem, apply a transformation, then use automatic differentiation.</p><pre><code class="language-julia">p = LogisticRegression(y, X, 10.0)   # data and (vague) priors
 t = as((β = as(Array, length(β)), )) # identity transformation, just to get the dimension
 P = TransformedLogDensity(t, p)      # transformed
-∇P = ADgradient(:ForwardDiff, P)</code></pre><pre><code class="language-none">ForwardDiff AD wrapper for TransformedLogDensity of dimension 2, w/ chunk size 2</code></pre></div><p>Sample using NUTS, random starting point.</p><div><pre><code class="language-julia">chain, NUTS_tuned = NUTS_init_tune_mcmc(∇P, 1000);</code></pre><pre><code class="language-none">MCMC, adapting ϵ (75 steps)
-0.0018 s/step ...done
-MCMC, adapting ϵ (25 steps)
-0.00096 s/step ...done
-MCMC, adapting ϵ (50 steps)
-0.0031 s/step ...done
-MCMC, adapting ϵ (100 steps)
-0.00042 s/step ...done
-MCMC, adapting ϵ (200 steps)
-0.00036 s/step ...done
-MCMC, adapting ϵ (400 steps)
-0.00037 s/step ...done
-MCMC, adapting ϵ (50 steps)
-0.00046 s/step ...done
-MCMC (1000 steps)
-0.0003 s/step ...done</code></pre></div><p>Extract the posterior. Here the transformation was not really necessary.</p><div><pre><code class="language-julia">β_posterior = first.(transform.(Ref(t), get_position.(chain)));</code></pre></div><p>Check that we recover the parameters.</p><div><pre><code class="language-julia">mean(β_posterior)</code></pre><pre><code class="language-none">2-element Array{Float64,1}:
- 0.8686907516666621
- 2.1151669923459138</code></pre></div><p>Quantiles</p><div><pre><code class="language-julia">qs = [0.05, 0.25, 0.5, 0.75, 0.95]
+∇P = ADgradient(:ForwardDiff, P)</code></pre><pre><code class="language-none">ForwardDiff AD wrapper for TransformedLogDensity of dimension 2, w/ chunk size 2</code></pre><p>Sample using NUTS, random starting point.</p><pre><code class="language-julia">results = mcmc_with_warmup(Random.GLOBAL_RNG, ∇P, 1000);</code></pre><pre><code class="language-none">(chain = Array{Float64,1}[[0.7615972910036336, 1.9691344072028314], [0.7817961086685736, 2.0306394812782504], [0.7974565747267018, 2.033301242632936], [0.8993171389100694, 2.026761853295337], [0.9122848616797138, 2.131798393116408], [0.7817992292019247, 2.1439517150039973], [0.8651428281728952, 1.9818951987228586], [0.9281293673047011, 2.138578218400537], [0.9467317277183059, 2.099967577158678], [0.8278727898876338, 2.02446889768862]  …  [0.8289744079468568, 1.9441293804044462], [0.6888030443757385, 2.1133152471762697], [0.7773252116339738, 2.0731201875214498], [0.8740806734518611, 1.9311763535103237], [0.8527780587377676, 2.159257825558404], [0.9024571680040144, 1.9701446044034594], [0.753610775078374, 1.8916403435781097], [0.8160777620332779, 2.0092523573568863], [0.7613661120903444, 1.9288077457470767], [0.7447550764607453, 2.041606181657042]], tree_statistics = DynamicHMC.TreeStatisticsNUTS[DynamicHMC.TreeStatisticsNUTS(-448.71407598383365, 2, turning at positions -3:0, 0.9028459436899107, 3, DynamicHMC.Directions(0x915ba4c8)), DynamicHMC.TreeStatisticsNUTS(-447.11622087463945, 2, turning at positions -2:1, 0.9648236400954477, 3, DynamicHMC.Directions(0x3f47a90d)), DynamicHMC.TreeStatisticsNUTS(-446.43257150310706, 1, turning at positions -1:0, 1.0, 1, DynamicHMC.Directions(0x48f3e70e)), DynamicHMC.TreeStatisticsNUTS(-446.2931376355488, 3, turning at positions 8:11, 1.0, 15, DynamicHMC.Directions(0xf660850b)), DynamicHMC.TreeStatisticsNUTS(-446.3898409769384, 2, turning at positions 2:3, 0.9922712935383886, 5, DynamicHMC.Directions(0x218829e5)), DynamicHMC.TreeStatisticsNUTS(-447.3529691744987, 2, turning at positions 1:4, 0.8853286044677949, 7, DynamicHMC.Directions(0x2971fb3c)), DynamicHMC.TreeStatisticsNUTS(-446.87601641979876, 2, turning at positions -2:1, 0.9999999999999999, 3, DynamicHMC.Directions(0x1aae73d1)), DynamicHMC.TreeStatisticsNUTS(-446.715494666841, 3, turning at positions -1:6, 0.9604632092832707, 7, DynamicHMC.Directions(0x47b65c76)), DynamicHMC.TreeStatisticsNUTS(-446.6551315560036, 2, turning at positions 0:3, 0.9730810252109907, 3, DynamicHMC.Directions(0xac63ee83)), DynamicHMC.TreeStatisticsNUTS(-446.4924243463828, 3, turning at positions -8:-11, 0.9987723675741819, 15, DynamicHMC.Directions(0x0c099b94))  …  DynamicHMC.TreeStatisticsNUTS(-448.2739407676433, 1, turning at positions 2:3, 0.9748793727996151, 3, DynamicHMC.Directions(0xcb81dd4f)), DynamicHMC.TreeStatisticsNUTS(-450.0451851110336, 2, turning at positions -1:2, 0.5288931421911282, 3, DynamicHMC.Directions(0x2409e872)), DynamicHMC.TreeStatisticsNUTS(-449.7157286691342, 2, turning at positions -2:1, 0.904796885726439, 3, DynamicHMC.Directions(0xfa3a1b05)), DynamicHMC.TreeStatisticsNUTS(-447.0145121728276, 2, turning at positions -3:0, 0.989111976913704, 3, DynamicHMC.Directions(0xa12c4584)), DynamicHMC.TreeStatisticsNUTS(-447.57155617431346, 2, turning at positions 0:3, 0.913281758549996, 3, DynamicHMC.Directions(0x6f1ba8a3)), DynamicHMC.TreeStatisticsNUTS(-448.75997707458686, 2, turning at positions 0:3, 0.7789322335281149, 3, DynamicHMC.Directions(0x95069bc7)), DynamicHMC.TreeStatisticsNUTS(-447.5914067399576, 2, turning at positions 2:3, 0.955306323424745, 5, DynamicHMC.Directions(0x4cde67ed)), DynamicHMC.TreeStatisticsNUTS(-447.07150658586033, 2, turning at positions -1:2, 0.9999999999999999, 3, DynamicHMC.Directions(0x732e21ee)), DynamicHMC.TreeStatisticsNUTS(-446.8961206928431, 3, turning at positions -5:2, 0.9672069628088131, 7, DynamicHMC.Directions(0xb9170c4a)), DynamicHMC.TreeStatisticsNUTS(-447.76358333788806, 2, turning at positions 0:3, 0.9116100978793864, 3, DynamicHMC.Directions(0x90092cd3))], κ = Gaussian kinetic energy (LinearAlgebra.Diagonal), √diag(M⁻¹): [0.09389834187727433, 0.1314103653424214], ϵ = 0.7419688762059411)</code></pre><p>Extract the posterior. (Here the transformation was not really necessary).</p><pre><code class="language-julia">β_posterior = first.(transform.(t, results.chain));</code></pre><pre><code class="language-none">1000-element Array{Array{Float64,1},1}:
+ [0.7615972910036336, 1.9691344072028314]
+ [0.7817961086685736, 2.0306394812782504]
+ [0.7974565747267018, 2.033301242632936] 
+ [0.8993171389100694, 2.026761853295337] 
+ [0.9122848616797138, 2.131798393116408] 
+ [0.7817992292019247, 2.1439517150039973]
+ [0.8651428281728952, 1.9818951987228586]
+ [0.9281293673047011, 2.138578218400537] 
+ [0.9467317277183059, 2.099967577158678] 
+ [0.8278727898876338, 2.02446889768862]  
+ ⋮                                       
+ [0.6888030443757385, 2.1133152471762697]
+ [0.7773252116339738, 2.0731201875214498]
+ [0.8740806734518611, 1.9311763535103237]
+ [0.8527780587377676, 2.159257825558404] 
+ [0.9024571680040144, 1.9701446044034594]
+ [0.753610775078374, 1.8916403435781097] 
+ [0.8160777620332779, 2.0092523573568863]
+ [0.7613661120903444, 1.9288077457470767]
+ [0.7447550764607453, 2.041606181657042] </code></pre><p>Check that we recover the parameters.</p><pre><code class="language-julia">mean(β_posterior)</code></pre><pre><code class="language-none">2-element Array{Float64,1}:
+ 0.868408030975927
+ 2.066954256222047</code></pre><p>Quantiles</p><pre><code class="language-julia">qs = [0.05, 0.25, 0.5, 0.75, 0.95]
 quantile(first.(β_posterior), qs)
 
 quantile(last.(β_posterior), qs)</code></pre><pre><code class="language-none">5-element Array{Float64,1}:
- 1.8979232582308971
- 2.026092883269106
- 2.107742988654445
- 2.203026214362809
- 2.348364817141937</code></pre></div><p>Check that mixing is good.</p><div><pre><code class="language-julia">ess = vec(mapslices(effective_sample_size, reduce(hcat, β_posterior); dims = 2))</code></pre><pre><code class="language-none">2-element Array{Float64,1}:
- 909.1655239284711
- 905.6958886420647</code></pre></div><p><em>This page was generated using <a href="https://github.com/fredrikekre/Literate.jl">Literate.jl</a>.</em></p><footer><hr/><a class="previous" href="../example_linear_regression/"><span class="direction">Previous</span><span class="title">Linear regression</span></a></footer></article></body></html>
+ 1.8472357840577378
+ 1.971562443709978 
+ 2.0637261356333196
+ 2.162255918531956 
+ 2.2987875294220013</code></pre><p>Check that mixing is good.</p><pre><code class="language-julia">ess = vec(mapslices(effective_sample_size, reduce(hcat, β_posterior); dims = 2))</code></pre><pre><code class="language-none">2-element Array{Float64,1}:
+ 613.7545105525049
+ 561.4760926837565</code></pre><p><em>This page was generated using <a href="https://github.com/fredrikekre/Literate.jl">Literate.jl</a>.</em></p><footer><hr/><a class="previous" href="../example_linear_regression/"><span class="direction">Previous</span><span class="title">Linear regression</span></a></footer></article></body></html>
