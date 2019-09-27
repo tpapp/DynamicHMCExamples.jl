@@ -4,8 +4,10 @@ using Documenter
 using Random
 Random.seed!(UInt32[0x57a97f0d, 0x1a38664c, 0x0dddb228, 0x7dbba96f])
 
-
-# generate using Literate
+####
+#### generate using Literate
+####
+
 
 DOCROOT = rel_path("../docs")
 DOCSOURCE = joinpath(DOCROOT, "src")
@@ -15,12 +17,15 @@ for example in EXAMPLES
     Literate.markdown(rel_path("example_$(example).jl"), DOCSOURCE)
 end
 
-
-# render & deploy using Documenter
+####
+#### render & deploy using Documenter
+####
 
 makedocs(root = DOCROOT,
+         format = Documenter.HTML(; prettyurls = get(ENV, "CI", nothing) == "true"),
          modules = Module[],
          sitename = "DynamicHMCExamples.jl",
+         authors = "Tamás K. Papp",
          pages = vcat(Any["index.md"],
                       Any["example_$(example).md" for example in EXAMPLES]))
 

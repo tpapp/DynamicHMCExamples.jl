@@ -30,8 +30,8 @@ end
 function (problem::BernoulliProblem)(θ)
     @unpack α = θ               # extract the parameters
     @unpack n, s = problem      # extract the data
-    # log likelihood: the constant log(combinations(n, s)) term
-    # has been dropped since it is irrelevant to sampling.
+    ## log likelihood: the constant log(combinations(n, s)) term
+    ## has been dropped since it is irrelevant to sampling.
     s * log(α) + (n-s) * log(1-α)
 end
 
