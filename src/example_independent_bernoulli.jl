@@ -3,12 +3,10 @@
 # We estimate a simple model of ``n`` independent Bernoulli draws, with
 # probability ``α``. First, we load the packages we use.
 
-using TransformVariables
-using LogDensityProblems
-using DynamicHMC
+using TransformVariables, LogDensityProblems, DynamicHMC, DynamicHMC.Diagnostics
 using MCMCDiagnostics
-using Parameters
-using Statistics
+using Parameters, Statistics, Random
+import ForwardDiff              # use for AD
 
 # Then define a structure to hold the data.
 # For this model, the number of draws equal to `1` is a sufficient statistic.
@@ -29,10 +27,11 @@ end
 # use decomposition in the arguments, but it could be done inside the function,
 # too.
 
-function (problem::BernoulliProblem)((α, )::NamedTuple{(:α, )})
-    @unpack n, s = problem        # extract the data
-    # log likelihood: the constant log(combinations(n, s)) term
-    # has been dropped since it is irrelevant to sampling.
+function (problem::BernoulliProblem)(θ)
+    @unpack α = θ               # extract the parameters
+    @unpack n, s = problem      # extract the data
+    ## log likelihood: the constant log(combinations(n, s)) term
+    ## has been dropped since it is irrelevant to sampling.
     s * log(α) + (n-s) * log(1-α)
 end
 
@@ -59,12 +58,12 @@ P = TransformedLogDensity(t, p)
 # diagnostic information), while the second returned value is the tuned sampler
 # which would allow continuation of sampling.
 
-chain, NUTS_tuned = NUTS_init_tune_mcmc(∇P, 1000)
+results = mcmc_with_warmup(Random.GLOBAL_RNG, ∇P, 1000)
 
 # To get the posterior for ``α``, we need to use `get_position` and
 # then transform
 
-posterior = transform.(Ref(t), get_position.(chain));
+posterior = transform.(t, results.chain);
 
 # Extract the parameter.
 
@@ -80,4 +79,4 @@ ess_α = effective_sample_size(posterior_α)
 
 # NUTS-specific statistics
 
-NUTS_statistics(chain)
+summarize_tree_statistics(results.tree_statistics)

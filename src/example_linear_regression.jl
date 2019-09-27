@@ -3,10 +3,13 @@
 # We estimate simple linear regression model with a half-T prior.
 # First, we load the packages we use.
 
-using TransformVariables, LogDensityProblems, DynamicHMC, MCMCDiagnostics,
-    Parameters, Statistics, Distributions, ForwardDiff
+using TransformVariables, LogDensityProblems, DynamicHMC, DynamicHMC.Diagnostics
+using MCMCDiagnostics
+using Parameters, Statistics, Random, Distributions
+import ForwardDiff              # use for AD
 
-# Then define a structure to hold the data: observables, covariates, and the degrees of freedom for the prior.
+# Then define a structure to hold the data: observables, covariates, and the degrees of
+# freedom for the prior.
 
 """
 Linear regression model ``y ∼ Xβ + ϵ``, where ``ϵ ∼ N(0, σ²)`` IID.
@@ -42,12 +45,14 @@ y = X*β .+ randn(N) .* σ;
 p = LinearRegressionProblem(y, X, 1.0);
 p((β = β, σ = σ))
 
-# For this problem, we write a function to return the transformation (as it varies with the number of covariates).
+# For this problem, we write a function to return the transformation (as it varies with the
+# number of covariates).
 
-problem_transformation(p::LinearRegressionProblem) =
+function problem_transformation(p::LinearRegressionProblem)
     as((β = as(Array, size(p.X, 2)), σ = asℝ₊))
+end
 
-# Wrap the problem with a transformation, then use Flux for the gradient.
+# Wrap the problem with a transformation, then use ForwardDiff for the gradient.
 
 t = problem_transformation(p)
 P = TransformedLogDensity(t, p)
@@ -57,11 +62,11 @@ P = TransformedLogDensity(t, p)
 # diagnostic information), while the second returned value is the tuned sampler
 # which would allow continuation of sampling.
 
-chain, NUTS_tuned = NUTS_init_tune_mcmc(∇P, 1000);
+results = mcmc_with_warmup(Random.GLOBAL_RNG, ∇P, 1000);
 
 # We use the transformation to obtain the posterior from the chain.
 
-posterior = transform.(Ref(t), get_position.(chain));
+posterior = transform.(t, results.chain);
 
 # Extract the parameter posterior means: `β`,
 
@@ -73,8 +78,10 @@ posterior_σ = mean(last, posterior)
 
 # Effective sample sizes (of untransformed draws)
 
-ess = mapslices(effective_sample_size, get_position_matrix(chain); dims = 1)
+ess = vec(mapslices(effective_sample_size,
+                    DynamicHMC.position_matrix(results.chain);
+                    dims = 2))
 
 # NUTS-specific statistics
 
-NUTS_statistics(chain)
+summarize_tree_statistics(results.tree_statistics)

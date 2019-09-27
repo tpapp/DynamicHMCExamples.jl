@@ -1,7 +1,9 @@
 # # Logistic regression
 
-using TransformVariables, LogDensityProblems, DynamicHMC, MCMCDiagnostics, Parameters,
-    Distributions, Statistics, StatsFuns, ForwardDiff
+using TransformVariables, LogDensityProblems, DynamicHMC, DynamicHMC.Diagnostics
+using MCMCDiagnostics
+using Parameters, Statistics, Random, Distributions, StatsFuns
+import ForwardDiff              # use for AD
 
 """
 Logistic regression.
@@ -40,11 +42,11 @@ P = TransformedLogDensity(t, p)      # transformed
 
 # Sample using NUTS, random starting point.
 
-chain, NUTS_tuned = NUTS_init_tune_mcmc(∇P, 1000);
+results = mcmc_with_warmup(Random.GLOBAL_RNG, ∇P, 1000);
 
-# Extract the posterior. Here the transformation was not really necessary.
+# Extract the posterior. (Here the transformation was not really necessary).
 
-β_posterior = first.(transform.(Ref(t), get_position.(chain)));
+β_posterior = first.(transform.(t, results.chain));
 
 # Check that we recover the parameters.
 
