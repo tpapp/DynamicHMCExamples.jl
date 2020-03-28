@@ -16,7 +16,12 @@ end
     @test length(ess) == 4
 end
 
-@testset "linear regression" begin
+@testset "logistic regression" begin
     include(rel_path("example_logistic_regression.jl"))
     @test all(ess .≥ 400)
+end
+
+@testset "multinomial logistic regression" begin
+    include(rel_path("example_multinomial_logistic_regression.jl"))
+    @test all(ess .≥ 200)
 end
