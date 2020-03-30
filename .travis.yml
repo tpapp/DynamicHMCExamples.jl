@@ -12,13 +12,9 @@ notifications:
 git:
   depth: 99999999
 
-## uncomment the following lines to allow failures on nightly julia
-## (tests will run but not make your overall status red)
-matrix:
+jobs:
   allow_failures:
   - julia: nightly
-
-jobs:
   include:
     - stage: Documentation
       julia: 1.2
