@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="UTF-8"/><meta name="viewport" content="width=device-width, initial-scale=1.0"/><title>Multinomial logistic regression · DynamicHMCExamples.jl</title><link href="https://cdnjs.cloudflare.com/ajax/libs/normalize/4.2.0/normalize.min.css" rel="stylesheet" type="text/css"/><link href="https://fonts.googleapis.com/css?family=Lato|Roboto+Mono" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.6.3/css/font-awesome.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/styles/default.min.css" rel="stylesheet" type="text/css"/><script>documenterBaseURL=".."</script><script src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.2.0/require.min.js" data-main="../assets/documenter.js"></script><script src="../siteinfo.js"></script><script src="../../versions.js"></script><link href="../assets/documenter.css" rel="stylesheet" type="text/css"/></head><body><nav class="toc"><h1>DynamicHMCExamples.jl</h1><select id="version-selector" onChange="window.location.href=this.value" style="visibility: hidden"></select><form class="search" id="search-form" action="../search/"><input id="search-query" name="q" type="text" placeholder="Search docs"/></form><ul><li><a class="toctext" href="../">Overview</a></li><li><a class="toctext" href="../example_independent_bernoulli/">Estimate Bernoulli draws probabilility</a></li><li><a class="toctext" href="../example_linear_regression/">Linear regression</a></li><li><a class="toctext" href="../example_logistic_regression/">Logistic regression</a></li><li class="current"><a class="toctext" href>Multinomial logistic regression</a><ul class="internal"></ul></li></ul></nav><article id="docs"><header><nav><ul><li><a href>Multinomial logistic regression</a></li></ul><a class="edit-page" href="https://github.com/tpapp/DynamicHMCExamples.jl/blob/master/src/example_multinomial_logistic_regression.jl"><span class="fa"></span> Edit on GitHub</a></nav><hr/><div id="topbar"><span>Multinomial logistic regression</span><a class="fa fa-bars" href="#"></a></div></header><h1><a class="nav-anchor" id="Multinomial-logistic-regression-1" href="#Multinomial-logistic-regression-1">Multinomial logistic regression</a></h1><pre><code class="language-julia">using TransformVariables, LogDensityProblems, DynamicHMC, DynamicHMC.Diagnostics
+using MCMCDiagnostics
+using Parameters, Statistics, Random, Distributions
+using NNlib: softmax
+import ForwardDiff # use for automatic differentiation (AD)
+
+&quot;&quot;&quot;
+Multinomial logistic regression.
+
+For each draw, ``Pr(yᵢ) ∼ softmax(Xᵢ β)``. Uses a `β ∼ MultivariateNormal(0, σI)` prior.
+
+`X` is supposed to include the `1`s for the intercept.
+&quot;&quot;&quot;
+struct MultinomialLogisticRegression{Ty, TX, Tσ}
+    y::Ty
+    X::TX
+    σ::Tσ
+end
+
+function (problem::MultinomialLogisticRegression)(θ)
+    @unpack y, X, σ = problem
+    @unpack β = θ
+    num_rows, num_covariates = size(X)
+    num_classes = size(β, 2) + 1
+    η = X * hcat(zeros(num_covariates), β) # the first column of all zeros corresponds to the base class
+    μ = softmax(η; dims=2)
+    loglik = sum([logpdf(Multinomial(1, μ[i, :]), y[i, :]) for i = 1:num_rows])
+    logpri = sum([logpdf(MultivariateNormal(num_classes - 1, σ), β[i, :]) for i = 1:num_covariates])
+    return loglik + logpri
+end</code></pre><p>Make up parameters, generate data using random draws.</p><pre><code class="language-julia">N = 10_000</code></pre><pre><code class="language-none">10000</code></pre><p>There are two covariates. The first one (the column of all ones) is the intercept.</p><pre><code class="language-julia">X = hcat(ones(N), randn(N));</code></pre><p>If we have C classes, then for each covariate we need (C - 1) coefficients. we consider the first class to be the &quot;base class&quot; and then for each of the other classes, we have a coefficient comparing that class to the base class In this example, we have four classes, so we need three coefficients for each covariate. There are two covariates, so we will have six coefficients in total. the rows of β correspond to the covariates e.g. the first row of β corresponds to the first covariate (the intercept) e.g. the second row of β corresponds to the second covariate the columns of β correspond to classes recall that we set the first class as our &quot;base class&quot; then the jth column of β contains the coefficients comparing the (j+1) class against the first class e.g. the first column of β contains coefficients comparing the second class against the first class e.g. the second column of β contains coefficients comparing the third class against the first class e.g. the third column of β contains coefficients comparing the fourth class against the first class</p><pre><code class="language-julia">β_true = [1.0 2.0 3.0; 4.0 5.0 6.0]
+η = X * hcat(zeros(2), β_true);
+μ = softmax(η; dims=2);</code></pre><p>y has N rows and C columns the rows of y correspond to observations the columns of y correspond to classes</p><pre><code class="language-julia">y = vcat([rand(Multinomial(1, μ[i,:]))&#39; for i in 1:N]...);</code></pre><p>Create a problem, apply a transformation, then use automatic differentiation.</p><pre><code class="language-julia">p = MultinomialLogisticRegression(y, X, 100.0) # data and (vague) priors
+t = as((β = as(Array, size(β_true)), )) # identity transformation, just to get the dimension
+P = TransformedLogDensity(t, p) # transformed
+∇P = ADgradient(:ForwardDiff, P) # use ForwardDiff for automatic differentiation (AD)</code></pre><pre><code class="language-none">ForwardDiff AD wrapper for TransformedLogDensity of dimension 6, w/ chunk size 6</code></pre><p>Sample using NUTS, random starting point.</p><pre><code class="language-julia">results = mcmc_with_warmup(Random.GLOBAL_RNG, ∇P, 1_000);</code></pre><p>Extract the posterior. (Here the transformation was not really necessary).</p><pre><code class="language-julia">β_posterior = first.(transform.(t, results.chain));</code></pre><p>Check that we recover the parameters.</p><pre><code class="language-julia">mean(β_posterior)
+
+function _median(x)
+	n = length(x)
+	result = similar(first(x))
+	for i in eachindex(result)
+		result[i] = median([x[j][i] for j = 1:n])
+	end
+	return result
+end
+
+_median(β_posterior)</code></pre><pre><code class="language-none">2×3 Array{Float64,2}:
+ 1.03644  1.99289  2.99856
+ 3.8702   4.92778  5.94678</code></pre><p>Quantiles</p><pre><code class="language-julia">qs = [0.05, 0.25, 0.5, 0.75, 0.95]
+quantile([β_posterior[i][1, 1] for i in 1:length(β_posterior)], qs)
+quantile([β_posterior[i][1, 2] for i in 1:length(β_posterior)], qs)
+quantile([β_posterior[i][1, 3] for i in 1:length(β_posterior)], qs)
+quantile([β_posterior[i][2, 1] for i in 1:length(β_posterior)], qs)
+quantile([β_posterior[i][2, 2] for i in 1:length(β_posterior)], qs)
+quantile([β_posterior[i][2, 3] for i in 1:length(β_posterior)], qs)</code></pre><pre><code class="language-none">5-element Array{Float64,1}:
+ 5.725363912702527
+ 5.846779702288359
+ 5.946779628680176
+ 6.039925713597189
+ 6.181279265735672</code></pre><p>Check that mixing is good.</p><pre><code class="language-julia">ess = vec(mapslices(effective_sample_size, reduce(hcat, [vec(a) for a in β_posterior]); dims = 2))</code></pre><pre><code class="language-none">6-element Array{Float64,1}:
+ 195.23406460367013
+ 203.68691690304703
+ 189.1162369396056 
+ 187.13462356738154
+ 187.99219336871204
+ 185.22765323514818</code></pre><hr/><p><em>This page was generated using <a href="https://github.com/fredrikekre/Literate.jl">Literate.jl</a>.</em></p><footer><hr/><a class="previous" href="../example_logistic_regression/"><span class="direction">Previous</span><span class="title">Logistic regression</span></a></footer></article></body></html>
