@@ -85,12 +85,12 @@ _median(β_posterior)
 
 # Quantiles
 qs = [0.05, 0.25, 0.5, 0.75, 0.95]
-quantile([β_posterior[i][1, 1] for i in 1:length(β_posterior)], qs)
-quantile([β_posterior[i][1, 2] for i in 1:length(β_posterior)], qs)
-quantile([β_posterior[i][1, 3] for i in 1:length(β_posterior)], qs)
-quantile([β_posterior[i][2, 1] for i in 1:length(β_posterior)], qs)
-quantile([β_posterior[i][2, 2] for i in 1:length(β_posterior)], qs)
-quantile([β_posterior[i][2, 3] for i in 1:length(β_posterior)], qs)
+@show quantile([β_posterior[i][1, 1] for i in 1:length(β_posterior)], qs);
+@show quantile([β_posterior[i][1, 2] for i in 1:length(β_posterior)], qs);
+@show quantile([β_posterior[i][1, 3] for i in 1:length(β_posterior)], qs);
+@show quantile([β_posterior[i][2, 1] for i in 1:length(β_posterior)], qs);
+@show quantile([β_posterior[i][2, 2] for i in 1:length(β_posterior)], qs);
+@show quantile([β_posterior[i][2, 3] for i in 1:length(β_posterior)], qs);
 
 # Check that mixing is good.
 ess = vec(mapslices(effective_sample_size, reduce(hcat, [vec(a) for a in β_posterior]); dims = 2))
