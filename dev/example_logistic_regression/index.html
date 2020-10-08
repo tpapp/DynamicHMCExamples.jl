@@ -30,15 +30,15 @@ y = rand.(Bernoulli.(logistic.(X*β)));</code></pre><p>Create a problem, apply a
 t = as((β = as(Array, length(β)), )) # identity transformation, just to get the dimension
 P = TransformedLogDensity(t, p)      # transformed
 ∇P = ADgradient(:ForwardDiff, P)</code></pre><pre><code class="language-none">ForwardDiff AD wrapper for TransformedLogDensity of dimension 2, w/ chunk size 2</code></pre><p>Sample using NUTS, random starting point.</p><pre><code class="language-julia">results = mcmc_with_warmup(Random.GLOBAL_RNG, ∇P, 1000);</code></pre><p>Extract the posterior. (Here the transformation was not really necessary).</p><pre><code class="language-julia">β_posterior = first.(transform.(t, results.chain));</code></pre><p>Check that we recover the parameters.</p><pre><code class="language-julia">mean(β_posterior)</code></pre><pre><code class="language-none">2-element Array{Float64,1}:
- 1.1035119930817476
- 2.0828385861056438</code></pre><p>Quantiles</p><pre><code class="language-julia">qs = [0.05, 0.25, 0.5, 0.75, 0.95]
+ 1.1748261029222584
+ 1.916838233345138 </code></pre><p>Quantiles</p><pre><code class="language-julia">qs = [0.05, 0.25, 0.5, 0.75, 0.95]
 quantile(first.(β_posterior), qs)
 
 quantile(last.(β_posterior), qs)</code></pre><pre><code class="language-none">5-element Array{Float64,1}:
- 1.849102901607245 
- 1.9841538404828052
- 2.080918400704083 
- 2.1767795890649917
- 2.3196516407983623</code></pre><p>Check that mixing is good.</p><pre><code class="language-julia">ess = vec(mapslices(effective_sample_size, reduce(hcat, β_posterior); dims = 2))</code></pre><pre><code class="language-none">2-element Array{Float64,1}:
- 363.3701172876574 
- 496.00383540796327</code></pre><hr/><p><em>This page was generated using <a href="https://github.com/fredrikekre/Literate.jl">Literate.jl</a>.</em></p><footer><hr/><a class="previous" href="../example_linear_regression/"><span class="direction">Previous</span><span class="title">Linear regression</span></a><a class="next" href="../example_multinomial_logistic_regression/"><span class="direction">Next</span><span class="title">Multinomial logistic regression</span></a></footer></article></body></html>
+ 1.7107322027412726
+ 1.8263780084809735
+ 1.9191147981764973
+ 1.9969088114620364
+ 2.1417762034786216</code></pre><p>Check that mixing is good.</p><pre><code class="language-julia">ess = vec(mapslices(effective_sample_size, reduce(hcat, β_posterior); dims = 2))</code></pre><pre><code class="language-none">2-element Array{Float64,1}:
+ 574.1466588991544
+ 519.3514514499625</code></pre><hr/><p><em>This page was generated using <a href="https://github.com/fredrikekre/Literate.jl">Literate.jl</a>.</em></p><footer><hr/><a class="previous" href="../example_linear_regression/"><span class="direction">Previous</span><span class="title">Linear regression</span></a><a class="next" href="../example_multinomial_logistic_regression/"><span class="direction">Next</span><span class="title">Multinomial logistic regression</span></a></footer></article></body></html>
