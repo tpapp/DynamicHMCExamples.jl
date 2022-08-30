@@ -1,0 +1,4 @@
+Simple discrete time stochastic volatility model, estimated using
+several simulated moment conditions, and the asymptotic Gaussian
+likelihood of the moment conditions.
+
