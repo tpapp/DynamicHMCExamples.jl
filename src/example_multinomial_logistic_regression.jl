@@ -3,7 +3,7 @@
 using TransformVariables, LogDensityProblems, DynamicHMC, DynamicHMC.Diagnostics
 using MCMCDiagnostics
 using Parameters, Statistics, Random, Distributions
-using NNlib: softmax
+using LogExpFunctions: softmax
 import ForwardDiff # use for automatic differentiation (AD)
 
 """
