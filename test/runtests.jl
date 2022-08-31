@@ -23,6 +23,5 @@ end
 
 @testset "multinomial logistic regression" begin
     include(rel_path("example_multinomial_logistic_regression.jl"))
-    @show ess
-    @test all(ess .≥ 200)
+    @test all(ess .≥ 180)
 end
