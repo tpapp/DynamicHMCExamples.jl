@@ -3,9 +3,9 @@
 # We estimate simple linear regression model with a half-T prior.
 # First, we load the packages we use.
 
-using TransformVariables, LogDensityProblems, DynamicHMC, DynamicHMC.Diagnostics
+using TransformVariables, LogDensityProblems, DynamicHMC, DynamicHMC.Diagnostics,
+    Parameters, Statistics, Random, Distributions, TransformedLogDensities
 using MCMCDiagnostics
-using Parameters, Statistics, Random, Distributions
 import ForwardDiff              # use for AD
 
 # Then define a structure to hold the data: observables, covariates, and the degrees of

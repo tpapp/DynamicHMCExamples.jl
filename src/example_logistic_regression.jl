@@ -1,8 +1,8 @@
 # # Logistic regression
 
-using TransformVariables, LogDensityProblems, DynamicHMC, DynamicHMC.Diagnostics
+using TransformVariables, LogDensityProblems, DynamicHMC, DynamicHMC.Diagnostics,
+    Parameters, Statistics, Random, Distributions, StatsFuns, TransformedLogDensities
 using MCMCDiagnostics
-using Parameters, Statistics, Random, Distributions, StatsFuns
 import ForwardDiff              # use for AD
 
 """

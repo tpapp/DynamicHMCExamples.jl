@@ -1,8 +1,8 @@
 # # Multinomial logistic regression
 
-using TransformVariables, LogDensityProblems, DynamicHMC, DynamicHMC.Diagnostics
+using TransformVariables, LogDensityProblems, DynamicHMC, DynamicHMC.Diagnostics,
+    TransformedLogDensities,  Parameters, Statistics, Random, Distributions
 using MCMCDiagnostics
-using Parameters, Statistics, Random, Distributions
 using LogExpFunctions: softmax
 import ForwardDiff # use for automatic differentiation (AD)
 

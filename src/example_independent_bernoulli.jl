@@ -3,9 +3,9 @@
 # We estimate a simple model of ``n`` independent Bernoulli draws, with
 # probability ``α``. First, we load the packages we use.
 
-using TransformVariables, LogDensityProblems, DynamicHMC, DynamicHMC.Diagnostics
+using TransformVariables, LogDensityProblems, DynamicHMC, DynamicHMC.Diagnostics,
+    TransformedLogDensities, Parameters, Statistics, Random
 using MCMCDiagnostics
-using Parameters, Statistics, Random
 import ForwardDiff              # use for AD
 
 # Then define a structure to hold the data.
