@@ -23,7 +23,7 @@ LogDensityProblems = "1"
 LogExpFunctions = "0.3"
 MCMCDiagnostics = "0.3"
 Parameters = "0.12"
-StatsFuns = "0.9"
+StatsFuns = "0.9, 1"
 TransformVariables = "0.7"
 julia = "1"
 
