@@ -24,7 +24,8 @@ end
     @test all(R̂ .≤ 1.01)
 end
 
-# @testset "multinomial logistic regression" begin
-#     include(rel_path("example_multinomial_logistic_regression.jl"))
-#     @test all(ess .≥ 180)
-# end
+@testset "multinomial logistic regression" begin
+    include(rel_path("example_multinomial_logistic_regression.jl"))
+    @test all(ess .≥ 500)
+    @test all(R̂ .≤ 1.01)
+end
