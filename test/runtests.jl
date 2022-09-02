@@ -14,13 +14,15 @@ end
 
 @testset "linear regression" begin
     include(rel_path("example_linear_regression.jl"))
-    @test length(ess) == 4
+    @test all(ess .≥ 4000)
+    @test all(R̂ .≤ 1.01)
 end
 
-# @testset "logistic regression" begin
-#     include(rel_path("example_logistic_regression.jl"))
-#     @test all(ess .≥ 350)
-# end
+@testset "logistic regression" begin
+    include(rel_path("example_logistic_regression.jl"))
+    @test all(ess .≥ 2500)
+    @test all(R̂ .≤ 1.01)
+end
 
 # @testset "multinomial logistic regression" begin
 #     include(rel_path("example_multinomial_logistic_regression.jl"))

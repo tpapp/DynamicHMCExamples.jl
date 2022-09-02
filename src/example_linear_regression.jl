@@ -11,9 +11,9 @@ using TransformVariables, LogDensityProblems, DynamicHMC, TransformedLogDensitie
 
 using Parameters, Statistics, Random, Distributions, LinearAlgebra
 
-# then diagnostic and benchmark tools
+# then diagnostic and benchmark tools,
 
-using MCMCDiagnosticTools, BenchmarkTools
+using MCMCDiagnosticTools, DynamicHMC.Diagnostics, BenchmarkTools
 
 # and use ForwardDiff for AD since the dimensions is small.
 

@@ -1,9 +1,20 @@
 # # Logistic regression
 
-using TransformVariables, LogDensityProblems, DynamicHMC, DynamicHMC.Diagnostics,
-    Parameters, Statistics, Random, Distributions, StatsFuns, TransformedLogDensities
-using MCMCDiagnostics
-import ForwardDiff              # use for AD
+# First, we import DynamicHMC and related libraries,
+
+using TransformVariables, LogDensityProblems, DynamicHMC, TransformedLogDensities
+
+# then some packages that help code the log posterior,
+
+using Parameters, Statistics, Random, Distributions, LinearAlgebra, StatsFuns, LogExpFunctions
+
+# then diagnostic and benchmark tools,
+
+using MCMCDiagnosticTools, BenchmarkTools
+
+# and use ForwardDiff for AD since the dimensions is small.
+
+import ForwardDiff
 
 """
 Logistic regression.
@@ -21,9 +32,9 @@ end
 function (problem::LogisticRegression)(θ)
     @unpack y, X, σ = problem
     @unpack β = θ
-    loglik = sum(logpdf.(Bernoulli.(logistic.(X*β)), y))
-    logpri = sum(logpdf.(Ref(Normal(0, σ)), β))
-    loglik + logpri
+    ℓ_y = mapreduce((y, x) -> logpdf(Bernoulli(logistic(dot(x, β))), y), +, y, eachrow(X))
+    ℓ_β =  loglikelihood(Normal(0, σ), β)
+    ℓ_y + ℓ_β
 end
 
 # Make up parameters, generate data using random draws.
@@ -40,13 +51,17 @@ t = as((β = as(Array, length(β)), )) # identity transformation, just to get th
 P = TransformedLogDensity(t, p)      # transformed
 ∇P = ADgradient(:ForwardDiff, P)
 
+# Benchmark
+
+@btime p((β = $β,))
+
 # Sample using NUTS, random starting point.
 
-results = mcmc_with_warmup(Random.GLOBAL_RNG, ∇P, 1000);
+results = map(_ -> mcmc_with_warmup(Random.default_rng(), ∇P, 1000), 1:5)
 
 # Extract the posterior. (Here the transformation was not really necessary).
 
-β_posterior = first.(transform.(t, results.chain));
+β_posterior = first.(transform.(t, eachcol(pool_posterior_matrices(results))))
 
 # Check that we recover the parameters.
 
@@ -61,4 +76,4 @@ quantile(last.(β_posterior), qs)
 
 # Check that mixing is good.
 
-ess = vec(mapslices(effective_sample_size, reduce(hcat, β_posterior); dims = 2))
+ess, R̂ = ess_rhat(stack_posterior_matrices(results))
