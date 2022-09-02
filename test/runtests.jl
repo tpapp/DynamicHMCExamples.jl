@@ -20,7 +20,7 @@ end
 
 @testset "logistic regression" begin
     include(rel_path("example_logistic_regression.jl"))
-    @test all(ess .≥ 2500)
+    @test all(ess .≥ 2000)
     @test all(R̂ .≤ 1.01)
 end
 
