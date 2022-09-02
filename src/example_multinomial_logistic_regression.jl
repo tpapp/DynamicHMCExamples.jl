@@ -2,7 +2,7 @@
 
 using TransformVariables, LogDensityProblems, DynamicHMC, DynamicHMC.Diagnostics,
     TransformedLogDensities,  Parameters, Statistics, Random, Distributions,
-    MCMCDiagnosticTools, LogExpFunctions
+    MCMCDiagnosticTools, LogExpFunctions, FillArrays
 import ForwardDiff # use for automatic differentiation (AD)
 
 """
@@ -25,9 +25,10 @@ function (problem::MultinomialLogisticRegression)(θ)
     num_classes = size(β, 2) + 1
     η = X * hcat(zeros(num_covariates), β) # the first column of all zeros corresponds to the base class
     μ = softmax(η; dims = 2)
+    D = MvNormal(Diagonal(Fill(σ ^ 2, num_classes - 1)))
     ℓ_likelihood = mapreduce((μ, y) -> logpdf(Multinomial(1, μ), y), +, eachrow(μ), eachrow(y))
-    ℓ_prior = mapreduce(β -> logpdf(MultivariateNormal(num_classes - 1, σ), β), +, eachrow(β))
-    return ℓ_likelihood + ℓ_prior
+    ℓ_prior = mapreduce(β -> logpdf(D, β), +, eachrow(β))
+    ℓ_likelihood + ℓ_prior
 end
 
 # Make up parameters, generate data using random draws.
