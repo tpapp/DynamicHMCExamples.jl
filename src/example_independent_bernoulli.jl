@@ -3,9 +3,21 @@
 # We estimate a simple model of ``n`` independent Bernoulli draws, with
 # probability ``α``. First, we load the packages we use.
 
-using TransformVariables, LogDensityProblems, DynamicHMC, DynamicHMC.Diagnostics,
-    TransformedLogDensities, Parameters, Statistics, Random, MCMCDiagnosticTools
-import ForwardDiff              # use for AD
+# First, we import DynamicHMC and related libraries,
+
+using TransformVariables, LogDensityProblems, DynamicHMC, TransformedLogDensities
+
+# then some packages that help code the log posterior,
+
+using Parameters, Statistics, Random, Distributions, LinearAlgebra
+
+# then diagnostic tools,
+
+using MCMCDiagnosticTools, DynamicHMC.Diagnostics
+
+# and use ForwardDiff for AD since the dimensions is small.
+
+import ForwardDiff
 
 # Then define a structure to hold the data.
 # For this model, the number of draws equal to `1` is a sufficient statistic.
