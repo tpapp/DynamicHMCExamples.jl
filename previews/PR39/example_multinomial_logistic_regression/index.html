@@ -35,48 +35,48 @@ end</code></pre><p>Make up parameters, generate data using random draws.</p><pre
  1  0  0  0
  0  0  0  1
  0  0  0  1
- 0  0  0  1
- 1  0  0  0
- 0  0  0  1
- 0  0  0  1
- 0  0  0  1
  0  1  0  0
+ 1  0  0  0
+ 0  0  1  0
  0  0  0  1
- ⋮        
- 1  0  0  0
- 1  0  0  0
- 1  0  0  0
- 1  0  0  0
- 1  0  0  0
+ 0  0  0  1
  0  0  0  1
  0  0  1  0
+ ⋮        
+ 0  0  0  1
  1  0  0  0
- 1  0  0  0</code></pre><p>Create a problem, apply a transformation, then use automatic differentiation.</p><pre><code class="language-julia hljs">p = MultinomialLogisticRegression(y, X, 100.0) # data and (vague) priors
+ 1  0  0  0
+ 0  0  1  0
+ 0  0  0  1
+ 0  0  0  1
+ 0  0  0  1
+ 0  0  0  1
+ 0  0  0  1</code></pre><p>Create a problem, apply a transformation, then use automatic differentiation.</p><pre><code class="language-julia hljs">p = MultinomialLogisticRegression(y, X, 100.0) # data and (vague) priors
 t = as((β = as(Array, size(β_true)), )) # identity transformation, just to get the dimension
 P = TransformedLogDensity(t, p)         # transformed
 ∇P = ADgradient(:ForwardDiff, P)        # use ForwardDiff for automatic differentiation</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">ForwardDiff AD wrapper for TransformedLogDensity of dimension 6, w/ chunk size 6</code></pre><p>Sample using NUTS, random starting point.</p><pre><code class="language-julia hljs">results = map(_ -&gt; mcmc_with_warmup(Random.default_rng(), ∇P, 1000), 1:3)
 
 posterior = transform.(t, eachcol(pool_posterior_matrices(results)));</code></pre><p>Extract the posterior. (Here the transformation was not really necessary).</p><pre><code class="language-julia hljs">β_posterior = first.(posterior)</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">3000-element Vector{Matrix{Float64}}:
- [0.8738202867610434 1.8638284364889015 2.889938673136656; 3.9550081770325245 4.803381870597978 5.834946030513532]
- [0.8289734546151216 1.855739437392081 2.8510784652386705; 3.958710266135175 4.818158653032256 5.835670155224033]
- [0.8708350790385061 1.9346075799460105 2.8964040563262663; 3.701819644901852 4.755702791395245 5.775750137366086]
- [0.8251244362593466 1.8330911524704723 2.861455471756426; 3.8108367368086307 4.715613797188632 5.7241602902778075]
- [0.803671286578387 1.8234402428212866 2.8108334858171853; 3.823482345937951 4.767516236359099 5.84387650423486]
- [0.8030486221997758 1.8126486995051403 2.8087200376253474; 3.857464287716491 4.826833546422356 5.84565177044703]
- [0.7718786505393888 1.7952233106159734 2.8325038905283115; 3.868071372453962 4.692440139901817 5.709051105805558]
- [1.026757817411355 2.1019704303110527 3.0788213464628016; 4.1168237740445175 5.110521962858656 6.149811023466164]
- [0.947134203801772 2.065519661857353 3.0675360640958056; 4.076469407749263 5.116868439195757 6.243678264464942]
- [1.0081466199786433 2.014667449259764 3.038436671432548; 4.287091092382683 5.20088413295941 6.214073908233171]
+ [0.9283439567453082 1.9511209380497887 3.0432764261387044; 3.8042846746450967 4.85111770391452 5.783238302304368]
+ [0.8780066616322013 1.9646688866601028 2.9421756887832156; 3.6848904157394013 4.869667760377807 5.837982980529531]
+ [0.9111817529357379 1.9839530127754448 2.989482892256679; 3.9546401621291514 5.0227221320438735 5.95896678676093]
+ [0.9170359187132413 1.90512228075594 2.958459187318153; 4.039028249174733 5.014433193484251 5.901015451041016]
+ [0.9186071975243675 2.012527218480554 3.063703071000777; 3.68877588360248 4.9525300362937195 5.820113044957364]
+ [0.7633029385897702 1.7841414512282598 2.885026033241212; 3.8521434619835015 5.038421999271319 5.828024030422591]
+ [0.8095737474355024 1.8833683671896337 2.8990684011235826; 3.819582350874109 4.762221095474253 5.834550403337991]
+ [0.8287646726034598 1.8699940645182358 2.907915156470978; 3.7908467505351635 4.855844534190551 5.850098099452033]
+ [0.9172918257460063 1.8690797168972113 2.9059794829383856; 3.680049655447296 4.8643227244434035 5.778586690577987]
+ [0.9275206589755557 1.8920422080996147 2.9014782215424186; 3.715991842484797 4.848740629221188 5.792732233295287]
  ⋮
- [0.8926068220187905 1.9052313695499643 2.9022330265201672; 3.930362717243224 5.09271069602098 6.057800568278349]
- [1.0548239720104067 2.020379615818926 3.018744013843442; 4.123981442844631 4.951096779991559 6.059619603146763]
- [1.0151868992524224 1.9981249762703117 3.0049291528400923; 4.115385953259942 5.008562406822718 5.992623269666099]
- [1.0758857151572156 2.105320249186943 3.1176279855668474; 4.217954379980845 5.2280969466460485 6.279836222554371]
- [1.12689047079201 2.1823888588706595 3.2261235164831916; 4.361255229751199 5.278888982977733 6.3109835775001315]
- [0.949468875910005 2.0164650455243622 3.001651091751; 4.129392036810284 5.0880521008702235 6.04515161455231]
- [0.9056207057440379 1.975642751964999 2.9890890438147246; 4.010564505119869 5.074582223936101 6.1736378989917]
- [1.0562453315107843 2.0716348559353635 3.0193664964725966; 4.176205312828393 5.001316544244074 6.013035608019545]
- [0.9081666933717104 1.983112884104031 3.00454067904618; 3.9668324558053825 5.046141999051166 6.1265792967165735]</code></pre><p>Check that we recover the parameters.</p><pre><code class="language-julia hljs">mean(β_posterior)
+ [1.0477785582447243 2.0967001995252863 3.1565176168852482; 4.030570056797793 5.172076837418673 6.169021308719435]
+ [0.9998832030584205 2.034793360872728 3.0819469500885437; 4.119203769832447 5.072022759637967 6.022436727758601]
+ [1.0166850330394848 2.0798788849287044 3.0974684363537848; 3.960049690320698 5.093622213306466 6.0682444877749875]
+ [0.9074172838688059 1.8887432678319758 2.9518314171251343; 3.7599815130611653 4.8624882060971 5.763426812511143]
+ [0.9657254658855212 1.9854783300388132 3.0362131469114733; 3.907565496924229 4.961574230144356 5.879903903214408]
+ [1.0070722914249854 2.1015899873608985 3.120558766858284; 4.006136996494685 5.200527492435826 6.146348511490026]
+ [0.9609201635556289 1.9972102140898775 3.02552922057082; 3.942706892519237 5.047097166689703 6.037038358835351]
+ [0.8588625332836453 1.9725971806114773 2.995280635256477; 4.043185386575863 5.095354854749067 6.043809394777765]
+ [1.0016636645290196 2.0022038874130192 3.0524692343484237; 3.9409314419079857 5.116471836990413 6.025881508730401]</code></pre><p>Check that we recover the parameters.</p><pre><code class="language-julia hljs">mean(β_posterior)
 
 function _median(x)
     n = length(x)
@@ -88,16 +88,16 @@ function _median(x)
 end
 
 _median(β_posterior)</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">2×3 Matrix{Float64}:
- 0.919497  1.96132  2.96187
- 4.02313   4.96944  5.99555</code></pre><p>Quantiles</p><pre><code class="language-julia hljs">qs = [0.05, 0.25, 0.5, 0.75, 0.95]
+ 0.912709  1.97046  3.01155
+ 3.85278   4.97941  5.92292</code></pre><p>Quantiles</p><pre><code class="language-julia hljs">qs = [0.05, 0.25, 0.5, 0.75, 0.95]
 quantile([β_posterior[i][1, 1] for i in 1:length(β_posterior)], qs)
 quantile([β_posterior[i][1, 2] for i in 1:length(β_posterior)], qs)
 quantile([β_posterior[i][1, 3] for i in 1:length(β_posterior)], qs)
 quantile([β_posterior[i][2, 1] for i in 1:length(β_posterior)], qs)
 quantile([β_posterior[i][2, 2] for i in 1:length(β_posterior)], qs)
 quantile([β_posterior[i][2, 3] for i in 1:length(β_posterior)], qs)</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">5-element Vector{Float64}:
- 5.779902387565948
- 5.91018284561009
- 5.995553927159678
- 6.086360188000266
- 6.221314353708303</code></pre><p>Check that mixing is good.</p><pre><code class="language-julia hljs">ess, R̂ = ess_rhat(stack_posterior_matrices(results))</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">([628.6262271748406, 707.8299006406073, 582.6615679086776, 604.8784967940321, 574.4277838029092, 589.5418747761303], [1.0007869257315114, 1.0006653737563767, 1.001114560817961, 1.0014066994562956, 1.001707984677186, 1.0010217487675943])</code></pre><hr/><p><em>This page was generated using <a href="https://github.com/fredrikekre/Literate.jl">Literate.jl</a>.</em></p></article><nav class="docs-footer"><a class="docs-footer-prevpage" href="../example_logistic_regression/">« Logistic regression</a><div class="flexbox-break"></div><p class="footer-message">Powered by <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> and the <a href="https://julialang.org/">Julia Programming Language</a>.</p></nav></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label><div class="select"><select id="documenter-themepicker"><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option></select></div></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> version 0.27.23 on <span class="colophon-date" title="Friday 2 September 2022 13:12">Friday 2 September 2022</span>. Using Julia version 1.6.7.</p></section><footer class="modal-card-foot"></footer></div></div></div></body></html>
+ 5.699928370659833
+ 5.830483765630946
+ 5.922923942279973
+ 6.011836281678305
+ 6.1399199457859455</code></pre><p>Check that mixing is good.</p><pre><code class="language-julia hljs">ess, R̂ = ess_rhat(stack_posterior_matrices(results))</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">([646.2780793525726, 561.6081090789797, 596.904505769779, 490.7633663179305, 586.4740937193793, 496.2131031496575], [1.0026751357950516, 1.0031554607175548, 1.0039494961826712, 1.0037515323031225, 1.0032266763967144, 1.0038556454940195])</code></pre><hr/><p><em>This page was generated using <a href="https://github.com/fredrikekre/Literate.jl">Literate.jl</a>.</em></p></article><nav class="docs-footer"><a class="docs-footer-prevpage" href="../example_logistic_regression/">« Logistic regression</a><div class="flexbox-break"></div><p class="footer-message">Powered by <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> and the <a href="https://julialang.org/">Julia Programming Language</a>.</p></nav></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label><div class="select"><select id="documenter-themepicker"><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option></select></div></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> version 0.27.23 on <span class="colophon-date" title="Friday 2 September 2022 13:46">Friday 2 September 2022</span>. Using Julia version 1.6.7.</p></section><footer class="modal-card-foot"></footer></div></div></div></body></html>
