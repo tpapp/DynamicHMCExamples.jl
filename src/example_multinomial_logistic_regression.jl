@@ -2,7 +2,7 @@
 
 using TransformVariables, LogDensityProblems, DynamicHMC, DynamicHMC.Diagnostics,
     TransformedLogDensities,  Parameters, Statistics, Random, Distributions,
-    MCMCDiagnosticTools, LogExpFunctions, FillArrays
+    MCMCDiagnosticTools, LogExpFunctions, FillArrays, LinearAlgebra
 import ForwardDiff # use for automatic differentiation (AD)
 
 """
