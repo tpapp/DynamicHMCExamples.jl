@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="UTF-8"/><meta name="viewport" content="width=device-width, initial-scale=1.0"/><title>Multinomial logistic regression · DynamicHMCExamples.jl</title><script data-outdated-warner src="../assets/warner.js"></script><link href="https://cdnjs.cloudflare.com/ajax/libs/lato-font/3.0.0/css/lato-font.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/juliamono/0.045/juliamono.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/fontawesome.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/solid.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/brands.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.13.24/katex.min.css" rel="stylesheet" type="text/css"/><script>documenterBaseURL=".."</script><script src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.6/require.min.js" data-main="../assets/documenter.js"></script><script src="../siteinfo.js"></script><script src="../../versions.js"></script><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../assets/themes/documenter-dark.css" data-theme-name="documenter-dark" data-theme-primary-dark/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../assets/themes/documenter-light.css" data-theme-name="documenter-light" data-theme-primary/><script src="../assets/themeswap.js"></script></head><body><div id="documenter"><nav class="docs-sidebar"><div class="docs-package-name"><span class="docs-autofit"><a href="../">DynamicHMCExamples.jl</a></span></div><form class="docs-search" action="../search/"><input class="docs-search-query" id="documenter-search-query" name="q" type="text" placeholder="Search docs"/></form><ul class="docs-menu"><li><a class="tocitem" href="../">Overview</a></li><li><a class="tocitem" href="../example_independent_bernoulli/">Estimate Bernoulli draws probabilility</a></li><li><a class="tocitem" href="../example_linear_regression/">Linear regression</a></li><li><a class="tocitem" href="../example_logistic_regression/">Logistic regression</a></li><li class="is-active"><a class="tocitem" href>Multinomial logistic regression</a></li></ul><div class="docs-version-selector field has-addons"><div class="control"><span class="docs-label button is-static is-size-7">Version</span></div><div class="docs-selector control is-expanded"><div class="select is-fullwidth is-size-7"><select id="documenter-version-selector"></select></div></div></div></nav><div class="docs-main"><header class="docs-navbar"><nav class="breadcrumb"><ul class="is-hidden-mobile"><li class="is-active"><a href>Multinomial logistic regression</a></li></ul><ul class="is-hidden-tablet"><li class="is-active"><a href>Multinomial logistic regression</a></li></ul></nav><div class="docs-right"><a class="docs-edit-link" href="https://github.com/tpapp/DynamicHMCExamples.jl/blob/master/src/example_multinomial_logistic_regression.jl" title="Edit on GitHub"><span class="docs-icon fab"></span><span class="docs-label is-hidden-touch">Edit on GitHub</span></a><a class="docs-settings-button fas fa-cog" id="documenter-settings-button" href="#" title="Settings"></a><a class="docs-sidebar-button fa fa-bars is-hidden-desktop" id="documenter-sidebar-button" href="#"></a></div></header><article class="content" id="documenter-page"><h1 id="Multinomial-logistic-regression"><a class="docs-heading-anchor" href="#Multinomial-logistic-regression">Multinomial logistic regression</a><a id="Multinomial-logistic-regression-1"></a><a class="docs-heading-anchor-permalink" href="#Multinomial-logistic-regression" title="Permalink"></a></h1><pre><code class="language- hljs">using TransformVariables, LogDensityProblems, DynamicHMC, DynamicHMC.Diagnostics,
+    TransformedLogDensities,  Parameters, Statistics, Random, Distributions
+using MCMCDiagnostics
+using LogExpFunctions: softmax
+import ForwardDiff # use for automatic differentiation (AD)
+
+&quot;&quot;&quot;
+Multinomial logistic regression.
+
+For each draw, ``Pr(yᵢ) ∼ softmax(Xᵢ β)``. Uses a `β ∼ MultivariateNormal(0, σI)` prior.
+
+`X` is supposed to include the `1`s for the intercept.
+&quot;&quot;&quot;
+struct MultinomialLogisticRegression{Ty, TX, Tσ}
+    y::Ty
+    X::TX
+    σ::Tσ
+end
+
+function (problem::MultinomialLogisticRegression)(θ)
+    @unpack y, X, σ = problem
+    @unpack β = θ
+    num_rows, num_covariates = size(X)
+    num_classes = size(β, 2) + 1
+    η = X * hcat(zeros(num_covariates), β) # the first column of all zeros corresponds to the base class
+    μ = softmax(η; dims=2)
+    loglik = sum([logpdf(Multinomial(1, μ[i, :]), y[i, :]) for i = 1:num_rows])
+    logpri = sum([logpdf(MultivariateNormal(num_classes - 1, σ), β[i, :]) for i = 1:num_covariates])
+    return loglik + logpri
+end</code></pre><p>Make up parameters, generate data using random draws.</p><pre><code class="language-julia hljs">N = 10_000</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">10000</code></pre><p>There are two covariates. The first one (the column of all ones) is the intercept.</p><pre><code class="language-julia hljs">X = hcat(ones(N), randn(N));</code></pre><p>If we have C classes, then for each covariate we need (C - 1) coefficients. we consider the first class to be the &quot;base class&quot; and then for each of the other classes, we have a coefficient comparing that class to the base class In this example, we have four classes, so we need three coefficients for each covariate. There are two covariates, so we will have six coefficients in total. the rows of β correspond to the covariates e.g. the first row of β corresponds to the first covariate (the intercept) e.g. the second row of β corresponds to the second covariate the columns of β correspond to classes recall that we set the first class as our &quot;base class&quot; then the jth column of β contains the coefficients comparing the (j+1) class against the first class e.g. the first column of β contains coefficients comparing the second class against the first class e.g. the second column of β contains coefficients comparing the third class against the first class e.g. the third column of β contains coefficients comparing the fourth class against the first class</p><pre><code class="language- hljs">β_true = [1.0 2.0 3.0; 4.0 5.0 6.0]
+η = X * hcat(zeros(2), β_true);
+μ = softmax(η; dims=2);
+nothing #hide</code></pre><p>y has N rows and C columns the rows of y correspond to observations the columns of y correspond to classes</p><pre><code class="language- hljs">y = vcat([rand(Multinomial(1, μ[i,:]))&#39; for i in 1:N]...);
+nothing #hide</code></pre><p>Create a problem, apply a transformation, then use automatic differentiation.</p><pre><code class="language- hljs">p = MultinomialLogisticRegression(y, X, 100.0) # data and (vague) priors
+t = as((β = as(Array, size(β_true)), )) # identity transformation, just to get the dimension
+P = TransformedLogDensity(t, p) # transformed
+∇P = ADgradient(:ForwardDiff, P) # use ForwardDiff for automatic differentiation (AD)</code></pre><p>Sample using NUTS, random starting point.</p><pre><code class="language- hljs">results = mcmc_with_warmup(Random.GLOBAL_RNG, ∇P, 1_000);
+nothing #hide</code></pre><p>Extract the posterior. (Here the transformation was not really necessary).</p><pre><code class="language- hljs">β_posterior = first.(transform.(t, results.chain));
+nothing #hide</code></pre><p>Check that we recover the parameters.</p><pre><code class="language- hljs">mean(β_posterior)
+
+function _median(x)
+	n = length(x)
+	result = similar(first(x))
+	for i in eachindex(result)
+		result[i] = median([x[j][i] for j = 1:n])
+	end
+	return result
+end
+
+_median(β_posterior)</code></pre><p>Quantiles</p><pre><code class="language- hljs">qs = [0.05, 0.25, 0.5, 0.75, 0.95]
+quantile([β_posterior[i][1, 1] for i in 1:length(β_posterior)], qs)
+quantile([β_posterior[i][1, 2] for i in 1:length(β_posterior)], qs)
+quantile([β_posterior[i][1, 3] for i in 1:length(β_posterior)], qs)
+quantile([β_posterior[i][2, 1] for i in 1:length(β_posterior)], qs)
+quantile([β_posterior[i][2, 2] for i in 1:length(β_posterior)], qs)
+quantile([β_posterior[i][2, 3] for i in 1:length(β_posterior)], qs)</code></pre><p>Check that mixing is good.</p><pre><code class="language- hljs">ess = vec(mapslices(effective_sample_size, reduce(hcat, [vec(a) for a in β_posterior]); dims = 2))</code></pre><hr/><p><em>This page was generated using <a href="https://github.com/fredrikekre/Literate.jl">Literate.jl</a>.</em></p></article><nav class="docs-footer"><a class="docs-footer-prevpage" href="../example_logistic_regression/">« Logistic regression</a><div class="flexbox-break"></div><p class="footer-message">Powered by <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> and the <a href="https://julialang.org/">Julia Programming Language</a>.</p></nav></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label><div class="select"><select id="documenter-themepicker"><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option></select></div></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> version 0.27.23 on <span class="colophon-date" title="Friday 2 September 2022 10:05">Friday 2 September 2022</span>. Using Julia version 1.6.7.</p></section><footer class="modal-card-foot"></footer></div></div></div></body></html>
