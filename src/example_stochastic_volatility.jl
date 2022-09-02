@@ -151,12 +151,12 @@ n = dimension(problem_transformation(p))
 results = mcmc_with_warmup(Random.default_rng(), ∇P, 1000)
 # FIXME commented out start values; ϵ=0.2, q = zeros(n), p = ones(n))
 # We use the transformation to obtain the posterior from the chain.
-posterior = transform.(t, pool_posterior_matrices([results]))
+posterior = transform.(t, eachcol(pool_posterior_matrices([results])))
 
 # # Plots
 
 # Extract the parameters and plot the posteriors
-density_σu = density(map(x -> x.σu, posterior))
-density_ρ = density(map(x -> x.ρ, posterior))
-density_σe = density(map(x -> x.σe, posterior))
+density_σu = density(map(x -> x.σu, posterior));
+density_ρ = density(map(x -> x.ρ, posterior));
+density_σe = density(map(x -> x.σe, posterior));
 plot(density_σu, density_ρ, density_σe, layout = (3,1), legend = false)
