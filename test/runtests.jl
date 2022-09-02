@@ -14,13 +14,13 @@ end
 
 @testset "linear regression" begin
     include(rel_path("example_linear_regression.jl"))
-    @test all(ess .≥ 4000)
+    @test all(ess .≥ 3000)
     @test all(R̂ .≤ 1.01)
 end
 
 @testset "logistic regression" begin
     include(rel_path("example_logistic_regression.jl"))
-    @test all(ess .≥ 2000)
+    @test all(ess .≥ 1500)
     @test all(R̂ .≤ 1.01)
 end
 

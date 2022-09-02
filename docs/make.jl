@@ -27,6 +27,7 @@ makedocs(root = DOCROOT,
          modules = Module[],
          sitename = "DynamicHMCExamples.jl",
          authors = "Tamás K. Papp",
+         strict = true,
          pages = vcat(Any["index.md"],
                       Any["example_$(example).md" for example in EXAMPLES]))
 
