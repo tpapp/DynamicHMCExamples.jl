@@ -4,9 +4,11 @@ authors = ["Tamas K. Papp <tkpapp@gmail.com>"]
 version = "0.2.0"
 
 [deps]
+BenchmarkTools = "6e4b80f9-dd63-53aa-95a3-0cdb28fa8baf"
 Distributions = "31c24e10-a181-5473-b8eb-7969acd0382f"
 DynamicHMC = "bbc10e6e-7c05-544b-b16e-64fede858acb"
 ForwardDiff = "f6369f11-7733-5829-9624-2563aa707210"
+LinearAlgebra = "37e2e46d-f89d-539d-b4ee-838fcccc9c8e"
 LogDensityProblems = "6fdf6af0-433a-55f7-b3ed-c6c6e0b8df7c"
 LogExpFunctions = "2ab3a3ac-af41-5b50-aa03-7779005ae688"
 MCMCDiagnosticTools = "be115224-59cd-429b-ad48-344e309966f0"

@@ -31,4 +31,5 @@ makedocs(root = DOCROOT,
                       Any["example_$(example).md" for example in EXAMPLES]))
 
 deploydocs(root = DOCROOT,
-           repo = "github.com/tpapp/DynamicHMCExamples.jl.git")
+           repo = "github.com/tpapp/DynamicHMCExamples.jl.git",
+           push_preview = true)
