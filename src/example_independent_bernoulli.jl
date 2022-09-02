@@ -3,10 +3,21 @@
 # We estimate a simple model of ``n`` independent Bernoulli draws, with
 # probability ``α``. First, we load the packages we use.
 
-using TransformVariables, LogDensityProblems, DynamicHMC, DynamicHMC.Diagnostics,
-    TransformedLogDensities, Parameters, Statistics, Random
-using MCMCDiagnostics
-import ForwardDiff              # use for AD
+# First, we import DynamicHMC and related libraries,
+
+using TransformVariables, LogDensityProblems, DynamicHMC, TransformedLogDensities
+
+# then some packages that help code the log posterior,
+
+using Parameters, Statistics, Random, Distributions, LinearAlgebra
+
+# then diagnostic tools,
+
+using MCMCDiagnosticTools, DynamicHMC.Diagnostics
+
+# and use ForwardDiff for AD since the dimensions is small.
+
+import ForwardDiff
 
 # Then define a structure to hold the data.
 # For this model, the number of draws equal to `1` is a sufficient statistic.
@@ -31,7 +42,7 @@ function (problem::BernoulliProblem)(θ)
     @unpack α = θ               # extract the parameters
     @unpack n, s = problem      # extract the data
     ## log likelihood: the constant log(combinations(n, s)) term
-    ## has been dropped since it is irrelevant to sampling.
+    ## has been dropped since it is irrelevant for posterior sampling.
     s * log(α) + (n-s) * log(1-α)
 end
 
@@ -48,22 +59,21 @@ p((α = 0.5, ))
 # 2. calculate the derivatives for this transformed mapping.
 #
 # The helper packages `TransformVariables` and `LogDensityProblems` take care of
-# this. We use a flat prior (the default, omitted)
+# this. We use a flat prior.
 
 t = as((α = as𝕀,))
 P = TransformedLogDensity(t, p)
 ∇P = ADgradient(:ForwardDiff, P);
 
-# Finally, we sample from the posterior. `chain` holds the chain (positions and
-# diagnostic information), while the second returned value is the tuned sampler
-# which would allow continuation of sampling.
+# Finally, we sample from the posterior. The returned value the posterior matrix, diagnostic
+# information, and the tuned sampler which would allow continuation of sampling.
 
-results = mcmc_with_warmup(Random.GLOBAL_RNG, ∇P, 1000)
+results = [mcmc_with_warmup(Random.default_rng(), ∇P, 1000) for _ in 1:5]
 
-# To get the posterior for ``α``, we need to use `get_position` and
+# To get the posterior for ``α``, we need to use the columns of the `posterior_matrix` and
 # then transform
 
-posterior = transform.(t, results.chain);
+posterior = transform.(t, eachcol(pool_posterior_matrices(results)));
 
 # Extract the parameter.
 
@@ -75,8 +85,8 @@ mean(posterior_α)
 
 # check the effective sample size
 
-ess_α = effective_sample_size(posterior_α)
+ess, R̂ = ess_rhat(stack_posterior_matrices(results))
 
-# NUTS-specific statistics
+# NUTS-specific statistics of the first chain
 
-summarize_tree_statistics(results.tree_statistics)
+summarize_tree_statistics(results[1].tree_statistics)
