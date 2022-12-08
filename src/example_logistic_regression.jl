@@ -2,7 +2,8 @@
 
 # First, we import DynamicHMC and related libraries,
 
-using TransformVariables, LogDensityProblems, DynamicHMC, TransformedLogDensities
+using TransformVariables, LogDensityProblems, LogDensityProblemsAD,
+    DynamicHMC, TransformedLogDensities
 
 # then some packages that help code the log posterior,
 
