@@ -22,7 +22,7 @@ TransformedLogDensities = "f9bc47f6-f3f8-4f3b-ab21-f8bc73906f26"
 [compat]
 BenchmarkTools = "1"
 Distributions = "0.21, 0.22, 0.23, 0.24, 0.25"
-DynamicHMC = "3.3"
+DynamicHMC = "3.3, 3.4"
 ForwardDiff = "0.10"
 LogDensityProblems = "2"
 LogDensityProblemsAD = "1"
