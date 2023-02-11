@@ -1,9 +1,8 @@
 # # Multinomial logistic regression
 
 using TransformVariables, LogDensityProblems, DynamicHMC, DynamicHMC.Diagnostics,
-    TransformedLogDensities,  Parameters, Statistics, Random, Distributions
-using MCMCDiagnostics
-using LogExpFunctions: softmax
+    TransformedLogDensities,  Parameters, Statistics, Random, Distributions,
+    MCMCDiagnosticTools, LogExpFunctions, FillArrays, LinearAlgebra
 import ForwardDiff # use for automatic differentiation (AD)
 
 """
@@ -25,10 +24,11 @@ function (problem::MultinomialLogisticRegression)(θ)
     num_rows, num_covariates = size(X)
     num_classes = size(β, 2) + 1
     η = X * hcat(zeros(num_covariates), β) # the first column of all zeros corresponds to the base class
-    μ = softmax(η; dims=2)
-    loglik = sum([logpdf(Multinomial(1, μ[i, :]), y[i, :]) for i = 1:num_rows])
-    logpri = sum([logpdf(MultivariateNormal(num_classes - 1, σ), β[i, :]) for i = 1:num_covariates])
-    return loglik + logpri
+    μ = softmax(η; dims = 2)
+    D = MvNormal(Diagonal(Fill(σ ^ 2, num_classes - 1)))
+    ℓ_likelihood = mapreduce((μ, y) -> logpdf(Multinomial(1, μ), y), +, eachrow(μ), eachrow(y))
+    ℓ_prior = mapreduce(β -> logpdf(D, β), +, eachrow(β))
+    ℓ_likelihood + ℓ_prior
 end
 
 # Make up parameters, generate data using random draws.
@@ -49,35 +49,38 @@ X = hcat(ones(N), randn(N));
 # e.g. the first column of β contains coefficients comparing the second class against the first class
 # e.g. the second column of β contains coefficients comparing the third class against the first class
 # e.g. the third column of β contains coefficients comparing the fourth class against the first class
-β_true = [1.0 2.0 3.0; 4.0 5.0 6.0]
-η = X * hcat(zeros(2), β_true);
-μ = softmax(η; dims=2);
+β_true = [1.0 2.0 3.0;
+          4.0 5.0 6.0]
+η = X * hcat(zeros(size(β_true, 1)), β_true);
+μ = softmax(η; dims = 2);
 # y has N rows and C columns
 # the rows of y correspond to observations
 # the columns of y correspond to classes
-y = vcat([rand(Multinomial(1, μ[i,:]))' for i in 1:N]...);
+y = mapreduce(μ -> permutedims(rand(Multinomial(1, μ))), vcat, eachrow(μ))
 
 # Create a problem, apply a transformation, then use automatic differentiation.
 p = MultinomialLogisticRegression(y, X, 100.0) # data and (vague) priors
 t = as((β = as(Array, size(β_true)), )) # identity transformation, just to get the dimension
-P = TransformedLogDensity(t, p) # transformed
-∇P = ADgradient(:ForwardDiff, P) # use ForwardDiff for automatic differentiation (AD)
+P = TransformedLogDensity(t, p)         # transformed
+∇P = ADgradient(:ForwardDiff, P)        # use ForwardDiff for automatic differentiation
 
 # Sample using NUTS, random starting point.
-results = mcmc_with_warmup(Random.GLOBAL_RNG, ∇P, 1_000);
+results = map(_ -> mcmc_with_warmup(Random.default_rng(), ∇P, 1000), 1:3)
+
+posterior = transform.(t, eachcol(pool_posterior_matrices(results)));
 
 # Extract the posterior. (Here the transformation was not really necessary).
-β_posterior = first.(transform.(t, results.chain));
+β_posterior = first.(posterior)
 
 # Check that we recover the parameters.
 mean(β_posterior)
 
 function _median(x)
-	n = length(x)
-	result = similar(first(x))
-	for i in eachindex(result)
-		result[i] = median([x[j][i] for j = 1:n])
-	end
+    n = length(x)
+    result = similar(first(x))
+    for i in eachindex(result)
+	result[i] = median([x[j][i] for j = 1:n])
+    end
 	return result
 end
 
@@ -93,4 +96,4 @@ quantile([β_posterior[i][2, 2] for i in 1:length(β_posterior)], qs)
 quantile([β_posterior[i][2, 3] for i in 1:length(β_posterior)], qs)
 
 # Check that mixing is good.
-ess = vec(mapslices(effective_sample_size, reduce(hcat, [vec(a) for a in β_posterior]); dims = 2))
+ess, R̂ = ess_rhat(stack_posterior_matrices(results))
