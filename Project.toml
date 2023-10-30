@@ -1,7 +1,7 @@
 name = "DynamicHMCExamples"
 uuid = "2771e1c8-acf3-11e8-3576-cd129da217b6"
 authors = ["Tamas K. Papp <tkpapp@gmail.com>"]
-version = "0.2.1"
+version = "0.2.2"
 
 [deps]
 BenchmarkTools = "6e4b80f9-dd63-53aa-95a3-0cdb28fa8baf"
