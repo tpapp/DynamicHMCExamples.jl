@@ -14,7 +14,7 @@ DOCSOURCE = joinpath(DOCROOT, "src")
 EXAMPLES = ["independent_bernoulli",
             "linear_regression",
             "logistic_regression",
-            #"multinomial_logistic_regression",
+            "multinomial_logistic_regression",
             ]
 
 for example in EXAMPLES
