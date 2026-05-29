@@ -1,7 +1,7 @@
 name = "DynamicHMCExamples"
 uuid = "2771e1c8-acf3-11e8-3576-cd129da217b6"
-authors = ["Tamas K. Papp <tkpapp@gmail.com>"]
 version = "0.2.2"
+authors = ["Tamas K. Papp <tkpapp@gmail.com>"]
 
 [deps]
 BenchmarkTools = "6e4b80f9-dd63-53aa-95a3-0cdb28fa8baf"
@@ -31,7 +31,7 @@ LogExpFunctions = "0.3"
 MCMCDiagnosticTools = "0.1, 0.2, 0.3"
 Parameters = "0.12"
 Statistics = "1"
-StatsFuns = "0.9, 1"
+StatsFuns = "0.9, 1, 2"
 TransformVariables = "0.7, 0.8"
 TransformedLogDensities = "1"
 julia = "1.8"
