@@ -8,7 +8,6 @@ Random.seed!(UInt32[0x57a97f0d, 0x1a38664c, 0x0dddb228, 0x7dbba96f])
 #### generate using Literate
 ####
 
-
 DOCROOT = rel_path("../docs")
 DOCSOURCE = joinpath(DOCROOT, "src")
 EXAMPLES = ["independent_bernoulli",
@@ -30,7 +29,6 @@ makedocs(root = DOCROOT,
          modules = Module[],
          sitename = "DynamicHMCExamples.jl",
          authors = "Tamás K. Papp",
-         strict = true,
          pages = vcat(Any["index.md"],
                       Any["example_$(example).md" for example in EXAMPLES]))
 
